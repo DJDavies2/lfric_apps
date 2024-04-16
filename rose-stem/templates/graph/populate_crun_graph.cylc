@@ -70,39 +70,57 @@
     {% endif %}
 
 
-    {# Define Nrun checksum comparison - only for final run and if crun_compare #}
-    {# is set true (default value) #}
-    {% if restart_no == crun-1 and task_values["crun_compare"] %}
+    {# If we're on the final run #}
+    {% if restart_no == crun-1 %}
 
-        {% set comp_dir = task_values["task_family"] %}
-        {% set checksum_nvcrun = "check_"~comp_dir~"-nrun-v-crun" %}
-        {% do tasks_to_run.update({checksum_nvcrun: crun_values }) %}
+        {# If crun_compare is true, compare to an nrun #}
+        {% if task_values["crun_compare"] %}
 
-        {# The comparison requires the nrun task and the final run to finish #}
-        {% do graph_sections.append([
-            application_run_task,
-            checksum_nvcrun]) %}
-        {% do graph_sections.append([
-            crun_task,
-            checksum_nvcrun]) %}
+            {% set comp_dir = task_values["task_family"] %}
+            {% set checksum_nvcrun = "check_"~comp_dir~"-nrun-v-crun" %}
+            {% do tasks_to_run.update({checksum_nvcrun: crun_values }) %}
 
-    {# In this case we want to compare the crun kgo to the stored kgo #}
-    {% elif restart_no == crun-1 and
-            not task_values["crun_compare"] and
-            checksum_kgo %}
+            {# The comparison requires the nrun task and the final run to finish #}
+            {% do graph_sections.append([
+                application_run_task,
+                checksum_nvcrun]) %}
+            {% do graph_sections.append([
+                crun_task,
+                checksum_nvcrun]) %}
 
-        {% set checksum_task = "check_"~
-                               task_values["task_family"]~
-                               "-crun"~restart_no %}
-        {% if checksum_task not in tasks_to_run %}
-            {% do tasks_to_run.update({checksum_task: crun_values }) %}
+        {# Crun_compare is false #}
+        {% else %}
+
+            {# If crun_compare is false but we are checking kgo, #}
+            {# compare against stored kgo #}
+            {% if checksum_kgo %}
+                {% set checksum_task = "check_"~
+                                    task_values["task_family"]~
+                                    "-crun"~restart_no %}
+                {% if checksum_task not in tasks_to_run %}
+                    {% do tasks_to_run.update({checksum_task: crun_values }) %}
+                {% endif %}
+
+                {% do graph_sections.append([
+                    crun_task,
+                    checksum_task~"?"]) %}
+            {% endif %}
+
+            {# If we want to plot but not doing an nrun comparison, plot from final crun #}
+            {% if plot and not task_values["crun_compare"] %}
+
+                {% set plot_task = "plot_"~
+                                   task_values["task_family"]~
+                                   "-crun"~restart_no %}
+                {% if plot_task not in tasks_to_run %}
+                    {% do tasks_to_run.update({plot_task: crun_values}) %}
+                {% endif %}
+                {% do graph_sections.append([
+                    crun_task,
+                    plot_task]) %}
+            {% endif %}
         {% endif %}
-
-        {% do graph_sections.append([
-            crun_task,
-            checksum_task~"?"]) %}
     {% endif %}
-
 {% endfor %}
 
 {% do LOG.debug("Finished in templates/graph/populate_crun_graph.cylc") %}
