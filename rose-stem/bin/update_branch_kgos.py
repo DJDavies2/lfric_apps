@@ -176,24 +176,30 @@ def parse_cl_args():
     args = parser.parse_args()
     args.working_copy = os.path.expanduser(args.working_copy)
     args.suite = args.suite.strip("/")
-    args.suite = os.path.expanduser(os.path.join("~", "cylc-run", args.suite))
 
     # Don't allow use of runN as this symlink doesn't exist on remote platforms
     # If runN or no run provided, read the runN symlink to work out actual num
-    path_base = args.suite.split("/")[-1]
+    try:
+        path_base = args.suite.split("/")[-1]
+    except IndexError:
+        path_base = args.suite
     if path_base == "runN":
         args.suite = args.suite.removesuffix("runN")
         path_base = ""
     if "run" not in path_base:
-        sym_path = run_command(f"readlink {os.path.join(args.suite, 'runN')}")
-        args.suite = os.path.join(args.suite, sym_path.stdout)
+        sym_path = run_command(
+            f"readlink {os.path.expanduser(
+                os.path.join('~', 'cylc-run', args.suite, 'runN')
+            )}"
+        )
+        args.suite = os.path.join(args.suite, sym_path.stdout.strip("\n"))
     return args
 
 
 if __name__ == "__main__":
     args = parse_cl_args()
 
-    suite_path = args.suite
+    suite_path = os.path.expanduser(os.path.join("~", "cylc-run", args.suite))
     log_file = os.path.join(suite_path, "log", "job", "1")
     flow_file = os.path.join(suite_path, "log", "config", "flow-processed.cylc")
 
