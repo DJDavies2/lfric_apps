@@ -26,7 +26,7 @@ export lfric_core_sources=
 
 export casim_rev=um13.5
 export casim_sources=
-export jules_rev=28485
+export jules_rev=28516
 export jules_sources=
 export shumlib_rev=um13.5
 export shumlib_sources=

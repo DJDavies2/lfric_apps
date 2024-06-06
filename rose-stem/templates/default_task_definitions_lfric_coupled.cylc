@@ -136,7 +136,7 @@
 
 {# Caution: This default assumes running at the MO #}
 {% if "riv_number_ancillary" not in task_dict %}
-    {% do task_dict.update({"riv_number_ancillary": "$BIG_DATA_DIR/ancils/basic-gc/Ticket2861/C48/n96e/orca025/rivers_trip/sequence/etopo5"}) %}
+    {% do task_dict.update({"riv_number_ancillary": "$BIG_DATA_DIR/ancils/basic-gc/Ticket147/C48/n96e/orca025/remapping_weights"}) %}
 {% endif %}
 
 {# Caution: This default assumes running at the MO #}

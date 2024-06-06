@@ -184,6 +184,10 @@
         <field id="seaice__melt_pond_fraction" />
         <field id="seaice__melt_pond_depth" />
 	<field id="snow__snow_mass" />                <!-- For snow on sea ice. tile_snow_mass in the code. -->
+	<field id="soil__surface_runoff" />
+	<field id="soil__sub_surface_runoff" />
+	<field id="processed__total_prec" />
+	<field id="surface__tile_fraction" />
       </file>
 
       <file id="lfric_averages" name="lfric_averages" output_freq="12h" convention="UGRID" enabled=".TRUE.">
