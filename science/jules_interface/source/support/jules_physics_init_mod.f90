@@ -423,7 +423,7 @@ contains
 
     ! Check the contents of the JULES soil parameters module
     ! This module sets some derived parameters
-    call check_jules_soil(sm_levels)
+    call check_jules_soil()
 
     ! ----------------------------------------------------------------
     ! JULES Biogeochemisty settings - contained in module jules_soil_biogeochem
