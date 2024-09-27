@@ -131,7 +131,7 @@ contains
     call modeldb%values%add_key_value( 'total_energy_previous', 0.0_r_def )
 
     ! Initialise infrastructure
-    call init_time( modeldb%clock, modeldb%calendar )
+    call init_time( modeldb )
     call initialise_infrastructure( io_context_name, modeldb )
 
     ! Add a place to store time axes in modeldb
@@ -188,8 +188,8 @@ contains
                                   modeldb )
 
     ! Close IO and create new clock that is not linked to XIOS
-    call final_time( modeldb%clock, modeldb%calendar )
-    call init_time( modeldb%clock, modeldb%calendar )
+    call final_time( modeldb )
+    call init_time( modeldb )
 
     call log_event( "end of initialise_modeldb: initialise_linear_model", &
                     LOG_LEVEL_TRACE )
@@ -263,7 +263,7 @@ contains
     call finalise_infrastructure( modeldb )
 
     ! Finalise time
-    call final_time( modeldb%clock, modeldb%calendar )
+    call final_time( modeldb )
 
   end subroutine finalise_modeldb
 

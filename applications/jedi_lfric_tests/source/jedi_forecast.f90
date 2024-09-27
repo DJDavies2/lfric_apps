@@ -84,8 +84,8 @@ program jedi_forecast
   ! Create geometry
   call jedi_geometry%initialise( model_communicator, configuration )
 
-  ! Create state
-  call jedi_state%initialise( jedi_geometry, configuration )
+  ! Create state (requires the configuration file name to setup the modeldb)
+  call jedi_state%initialise( jedi_geometry, configuration, filename )
 
   ! Create non-linear model
   call jedi_model%initialise( configuration )
@@ -95,7 +95,7 @@ program jedi_forecast
 
   call log_event( 'Finalising ' // program_name // ' ...', LOG_LEVEL_ALWAYS )
   ! To provide KGO
-  depository => jedi_state%model_data%get_field_collection("depository")
+  depository => jedi_state%modeldb%fields%get_field_collection("depository")
   call output_checksum( program_name, depository )
 
 end program jedi_forecast

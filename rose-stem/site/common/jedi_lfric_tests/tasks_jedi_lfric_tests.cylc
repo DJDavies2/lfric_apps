@@ -23,14 +23,14 @@
         "tsteps": 20,
     }) %}
 
-{% elif task_ns.conf_name == "forecast_default-C12" %}
+{% elif task_ns.conf_name == "forecast_gh-si-for-linear-C12" %}
 
     {% do task_dict.update({
         "app_name": "jedi_forecast",
-        "opt_confs": ["default"],
+        "opt_confs": ["gh-si-for-linear"],
         "resolution": "C12",
-        "DT": 3600,
-        "tsteps": 7,
+        "DT": 90,
+        "tsteps": 13,
     }) %}
 
 {% elif task_ns.conf_name == "forecast_pseudo_default-C12" %}

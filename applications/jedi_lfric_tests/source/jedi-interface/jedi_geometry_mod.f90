@@ -14,8 +14,8 @@ module jedi_geometry_mod
   use, intrinsic :: iso_fortran_env, only : real64
 
   use calendar_mod,                  only : calendar_type
-  use constants_mod,                 only : i_def, str_def, l_def, &
-                                            r_second, i_timestep
+  use constants_mod,                 only : i_def, str_def, r_second, &
+                                            i_timestep
   use extrusion_mod,                 only : extrusion_type, TWOD
   use io_context_mod,                only : io_context_type
   use jedi_lfric_driver_time_mod,    only : jedi_lfric_init_time, &
@@ -314,9 +314,9 @@ subroutine setup_io(self, configuration)
   character( len=str_def ) :: io_calender_start_str
   integer( kind=i_def )    :: freq
 
-  type(jedi_lfric_file_meta_type) :: file_meta_data(2)
-  type( jedi_duration_type )      :: io_time_step
-  type( jedi_datetime_type )      :: io_calender_start
+  type( jedi_lfric_file_meta_type ) :: file_meta_data(2)
+  type( jedi_duration_type )        :: io_time_step
+  type( jedi_datetime_type )        :: io_calender_start
 
   ! Create IO clock and setup IO
   call configuration%get_value( 'io_time_step', io_time_step_str )

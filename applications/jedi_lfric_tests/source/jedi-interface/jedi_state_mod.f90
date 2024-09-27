@@ -10,18 +10,16 @@
 !>          the functionality required by the LFRic-JEDI model interface on the
 !>          LFRic-API. This includes i) read/write to a defined set of fields,
 !>          ii) ability to interoperate between LFRic fields and JEDI fields
-!>          (Atlas fields here), and iii) storage of model_data instance to be
-!>          used for IO and model time stepping.
+!>          (Atlas fields here), and iii) storage of modeldb instance to be
+!>          used for model time stepping.
 module jedi_state_mod
 
   use, intrinsic :: iso_fortran_env,  only : real64
   use atlas_field_emulator_mod,       only : atlas_field_emulator_type
   use atlas_field_interface_mod,      only : atlas_field_interface_type
-  use calendar_mod,                   only : calendar_type
   use constants_mod,                  only : i_def, l_def, str_def
-  use driver_model_data_mod,          only : model_data_type
-  use driver_time_mod,                only : init_time, final_time
   use field_collection_mod,           only : field_collection_type
+  use gungho_modeldb_mod,             only : modeldb_type
   use io_context_mod,                 only : io_context_type
   use jedi_geometry_mod,              only : jedi_geometry_type
   use jedi_lfric_datetime_mod,        only : jedi_datetime_type
@@ -50,18 +48,11 @@ type, public :: jedi_state_type
   type( jedi_lfric_field_meta_type )              :: field_meta_data
 
   !> Interface field linking the Atlas emulator fields and LFRic fields in the
-  !> model data (to do field copies)
-  type( atlas_field_interface_type ), allocatable :: fields_to_model_data(:)
+  !> modeldb (to do field copies)
+  type( atlas_field_interface_type ), allocatable :: fields_to_modeldb(:)
 
-  !> Model data that stores the fields to propagate
-  !> (will be subsumed into modelDB)
-  type( model_data_type ),  public                :: model_data
-
-  !> Model clock associated with the model_data (will be subsumed into modelDB)
-  type( model_clock_type ), allocatable, public   :: model_clock
-
-  !> Model calendar associated with the model_data (will be subsumed into modelDB)
-  class( calendar_type ), allocatable             :: calendar
+  !> Modeldb that stores the fields to propagate
+  type( modeldb_type ),  public                   :: modeldb
 
   !> Field collection to perform IO
   type( field_collection_type ), public           :: io_collection
@@ -80,12 +71,9 @@ contains
   procedure :: initialise => state_initialiser_read
   procedure :: state_initialiser
 
-  !> Initialise the model_data
-  procedure, private :: initialise_model_data
-
   !> Setup the atlas_field_interface_type that enables copying between Atlas
-  !> field emulators and the LFRic fields in the model_data
-  procedure, private :: setup_interface_to_model_data
+  !> field emulators and the LFRic fields in the modeldb
+  procedure, private :: setup_interface_to_modeldb
 
   !> Setup the atlas_field_interface_type that enables copying between Atlas
   !> field emulators and the fields in a LFRic field collection
@@ -109,18 +97,15 @@ contains
   !> Write model fields to file
   procedure, public :: write_file
 
-  !> Create the model_data
-  procedure, public :: create_model_data
-
   !> Update the curent time
   procedure, public :: update_time
 
   !> Print field
   procedure, public :: print_field
 
-  !> Copy the data in the LFRic fields stored in the model_data to the internal
+  !> Copy the data in the LFRic fields stored in the modeldb to the internal
   !> Atlas field emulators
-  procedure, public :: from_model_data
+  procedure, public :: from_modeldb
 
   !> Finalizer
   final             :: jedi_state_destructor
@@ -138,17 +123,25 @@ contains
 
 !> @brief    Initialiser via read for jedi_state_type
 !>
-!> @param [in] geometry The geometry object required to construct the state
-!> @param [in] config   The configuration object including the required
-!>                      information to construct a state and read a file to
-!>                      initialise the fields
-subroutine state_initialiser_read( self, geometry, configuration )
+!> @param [in] geometry          The geometry object required to construct the
+!>                               state
+!> @param [in] config            The configuration object including the
+!>                               required information to construct a state and
+!>                               read a file to initialise the fields
+!> @param [in] modeldb_filename  The location of the modeldb configuration file
+subroutine state_initialiser_read( self, &
+                                   geometry, &
+                                   configuration, &
+                                   modeldb_filename )
+
+  use jedi_lfric_nl_modeldb_driver_mod, only : initialise_modeldb
 
   implicit none
 
   class( jedi_state_type ),           intent(inout) :: self
   type( jedi_geometry_type ), target, intent(in)    :: geometry
   type( namelist_collection_type ),   intent(in)    :: configuration
+  character(len=*),         optional, intent(in)    :: modeldb_filename
 
   ! Local
   type( namelist_type ), pointer :: jedi_state_config
@@ -158,17 +151,28 @@ subroutine state_initialiser_read( self, geometry, configuration )
 
   call self%state_initialiser( geometry, jedi_state_config )
 
-  ! Initialise the Atlas field emulators via the model_data or the
+  ! Initialise the Atlas field emulators via the modeldb or the
   ! io_collection
   call jedi_state_config%get_value( 'use_pseudo_model', use_pseudo_model )
-  if ( .not. use_pseudo_model ) then
-    ! This calls the models initialise method that populates model_data and
-    ! does a copy from model_data to the fields
-    call self%initialise_model_data()
-  else
-    ! We are not running the non-linear model so read the file directly and
-    ! do a copy from io_collection to the fields
+
+  if ( use_pseudo_model ) then
+    ! We are not running the non-linear model so read the model fields from
+    ! a file obtained by running the nl model offline and do a copy from
+    ! io_collection to the fields stored internally (self%fields).
     call self%read_file( self%state_time )
+  else
+    ! We are running the non-linear model so initialise the modeldb and
+    ! do a copy from model fields stored inside the modeldb
+    if ( .not. present(modeldb_filename) ) then
+      ! A configuration file is required if the pseudo model is not being used.
+      log_scratch_space = &
+        'jedi_state_mod: modeldb configuration file name not supplied.'
+      call log_event( log_scratch_space, LOG_LEVEL_ERROR )
+    endif
+    call initialise_modeldb( "non-linear modeldb", modeldb_filename, &
+                             geometry%get_mpi_comm(), self%modeldb )
+    call self%setup_interface_to_modeldb()
+    call self%from_modeldb()
   end if
 
 end subroutine state_initialiser_read
@@ -180,7 +184,7 @@ end subroutine state_initialiser_read
 !>                      information to construct a state
 subroutine state_initialiser( self, geometry, config )
 
-  use fs_continuity_mod,     only : W3, Wtheta
+  use fs_continuity_mod,    only : W3, Wtheta
 
   implicit none
 
@@ -198,7 +202,6 @@ subroutine state_initialiser( self, geometry, config )
   logical(l_def)                  :: twod_field
   character(str_def)              :: state_time
   character(str_def), allocatable :: variables(:)
-  logical(l_def)                  :: use_pseudo_model
 
   ! Setup
   call config%get_value( 'state_time', state_time )
@@ -246,33 +249,7 @@ subroutine state_initialiser( self, geometry, config )
   ! Setup the io_collection (empty ready for read/write operations)
   call self%io_collection%initialise(name = 'io_collection', table_len=100)
 
-  ! If running the model, create model data and link to fields .
-  call config%get_value( 'use_pseudo_model', use_pseudo_model )
-  if ( .not. use_pseudo_model ) then
-    call init_time( self%model_clock, self%calendar )
-    call self%create_model_data()
-  end if
-
 end subroutine state_initialiser
-
-!> @brief    A method to initialise the model_data and copy into the Atlas
-!>           field emulators
-!>
-subroutine initialise_model_data( self )
-
-  use jedi_lfric_fake_nl_mod, only : initialise_fake_nl_model_data
-
-  implicit none
-
-  class( jedi_state_type ), intent(inout) :: self
-
-  ! Read the state into the LFRic model data
-  call initialise_fake_nl_model_data( self%model_data )
-
-  ! Copy model_data fields to the Atlas field emulators
-  call self%from_model_data()
-
-end subroutine initialise_model_data
 
 !> @brief    Returns the current time of the increment
 !>
@@ -328,7 +305,7 @@ subroutine read_file( self, read_time )
   ! Read the state into the io_collection
   call read_state( self%io_collection, prefix=file_prefix )
 
-  ! Copy model_data fields to the Atlas field emulators
+  ! Copy modeldb fields to the Atlas field emulators
   call self%field_meta_data%get_variable_names(variable_names)
 
   call self%set_from_field_collection(variable_names, self%io_collection)
@@ -382,28 +359,10 @@ subroutine write_file( self, write_time )
 
 end subroutine write_file
 
-!> @brief    Create an instance of the model_data for jedi_state_type
+!> @brief    Setup fields_to_modeldb variable that enables copying between
+!>           Atlas field emulators and the LFRic fields in the modeldb
 !>
-subroutine create_model_data( self )
-
-  use jedi_lfric_fake_nl_mod,   only : create_fake_nl_model_data
-
-  implicit none
-
-  class( jedi_state_type ), intent(inout) :: self
-
-  ! Create model data and then link the Atlas fields to them
-  call create_fake_nl_model_data( self%geometry%get_mesh(),      &
-                                  self%geometry%get_twod_mesh(), &
-                                  self%model_data )
-  call self%setup_interface_to_model_data()
-
-end subroutine create_model_data
-
-!> @brief    Setup fields_to_model_data variable that enables copying between
-!>           Atlas field emulators and the LFRic fields in the model_data
-!>
-subroutine setup_interface_to_model_data( self )
+subroutine setup_interface_to_modeldb( self )
 
   use jedi_lfric_utils_mod,  only: get_model_field
   use field_mod,             only: field_type
@@ -422,15 +381,15 @@ subroutine setup_interface_to_model_data( self )
   type( field_collection_type ), pointer :: depository
 
   nullify(depository)
-  depository => self%model_data%get_field_collection("depository")
+  depository => self%modeldb%fields%get_field_collection("depository")
 
   n_variables = self%field_meta_data%get_n_variables()
 
   ! Allocate space for the interface fields
-  if ( allocated( self%fields_to_model_data ) ) then
-    deallocate( self%fields_to_model_data )
+  if ( allocated( self%fields_to_modeldb ) ) then
+    deallocate( self%fields_to_modeldb )
   endif
-  allocate( self%fields_to_model_data( n_variables ) )
+  allocate( self%fields_to_modeldb( n_variables ) )
 
   ! Link the Atlas emulator fields with lfric fields
   call self%geometry%get_horizontal_map(horizontal_map_ptr)
@@ -442,17 +401,17 @@ subroutine setup_interface_to_model_data( self )
 
     atlas_data_ptr => self%fields(ivar)%get_data()
 
-    call self%fields_to_model_data(ivar)%initialise( atlas_data_ptr,     &
-                                                     horizontal_map_ptr, &
-                                                     lfric_field_ptr )
+    call self%fields_to_modeldb(ivar)%initialise( atlas_data_ptr,     &
+                                                  horizontal_map_ptr, &
+                                                  lfric_field_ptr )
 
   end do
 
-end subroutine setup_interface_to_model_data
+end subroutine setup_interface_to_modeldb
 
-!> @brief    Copy from model_data to the Atlas field emulators
+!> @brief    Copy from modeldb to the Atlas field emulators
 !>
-subroutine from_model_data( self )
+subroutine from_modeldb( self )
 
   implicit none
 
@@ -464,14 +423,14 @@ subroutine from_model_data( self )
   !> @todo Will need some sort of transform for winds and
   !>       possibly other higher order elements.
   !>
-  !>       call transform_winds(model_data)
+  !>       call transform_winds(...)
 
   ! copy to the Atlas emulator fields
-  do ivar = 1, size(self%fields_to_model_data)
-    call self%fields_to_model_data(ivar)%copy_from_lfric()
+  do ivar = 1, size(self%fields_to_modeldb)
+    call self%fields_to_modeldb(ivar)%copy_from_lfric()
   end do
 
-end subroutine from_model_data
+end subroutine from_modeldb
 
 !> @brief    Setup Atlas-LFRic interface_fields that enables copying
 !>           between Atlas field emulators and the LFRic fields in
@@ -704,15 +663,16 @@ end subroutine set_clock
 !>
 subroutine jedi_state_destructor( self )
 
+  use jedi_lfric_nl_modeldb_driver_mod, only : finalise_modeldb
+
   implicit none
 
   type( jedi_state_type ), intent(inout) :: self
 
   self%geometry => null()
   if ( allocated(self%fields ) ) deallocate(self%fields )
-  if ( allocated(self%model_clock ) ) then
-    call final_time( self%model_clock, self%calendar )
-  endif
+
+  call finalise_modeldb( self%modeldb )
 
 end subroutine jedi_state_destructor
 
