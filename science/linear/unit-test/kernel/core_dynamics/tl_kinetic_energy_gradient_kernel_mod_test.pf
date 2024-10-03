@@ -54,6 +54,7 @@ contains
                                           moisture_formulation_dry
     use feign_config_mod,          only : feign_finite_element_config, &
                                           feign_formulation_config
+    use sci_chi_transform_mod,     only : init_chi_transforms
 
     implicit none
 
@@ -84,14 +85,23 @@ contains
                                    use_multires_coupling=.false.,  &
                                    si_momentum_equation = .true.,  &
                                    vector_invariant=.false.)
+
+    call init_chi_transforms()
+
   end subroutine setUp
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   subroutine tearDown( this )
 
+    use configuration_mod,        only: final_configuration
+    use sci_chi_transform_mod,    only: final_chi_transforms
+
     implicit none
 
     class(tl_kinetic_energy_gradient_test_type), intent(inout) :: this
+
+    call final_configuration()
+    call final_chi_transforms()
 
   end subroutine tearDown
 

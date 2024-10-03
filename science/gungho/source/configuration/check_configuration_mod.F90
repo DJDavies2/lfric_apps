@@ -120,8 +120,7 @@ contains
                                            rehabilitate,                       &
                                            coord_order,                        &
                                            coord_system,                       &
-                                           coord_system_alphabetaz,            &
-                                           coord_system_lonlatz
+                                           coord_system_native
     use formulation_config_mod,      only: use_physics,                        &
                                            use_wavedynamics,                   &
                                            dlayer_on
@@ -187,24 +186,6 @@ contains
         write( log_scratch_space, '(A)' ) 'For planar geometry or periodic meshes, coordinate order must be positive'
         call log_event( log_scratch_space, LOG_LEVEL_ERROR )
       end if
-      if ( coord_system == coord_system_alphabetaz .and. geometry /= geometry_spherical ) then
-        write( log_scratch_space, '(A)' ) '(alpha,beta) coordinate system is only valid with spherical geometry'
-        call log_event( log_scratch_space, LOG_LEVEL_ERROR )
-      end if
-      if ( coord_system == coord_system_alphabetaz .and. topology /= topology_fully_periodic ) then
-        ! This could change in future if we were to add meshes that were a single panel
-        write( log_scratch_space, '(A)' ) '(alpha,beta) coordinate system is only valid with fully-periodic topology'
-        call log_event( log_scratch_space, LOG_LEVEL_ERROR )
-      end if
-      if ( coord_system == coord_system_lonlatz .and. geometry /= geometry_spherical ) then
-        write( log_scratch_space, '(A)' ) '(longitude,latitude) coordinate system is only valid with spherical geometry'
-        call log_event( log_scratch_space, LOG_LEVEL_ERROR )
-      end if
-      if ( coord_system == coord_system_lonlatz .and. topology == topology_fully_periodic ) then
-        write( log_scratch_space, '(A)' ) '(longitude,latitude) coordinate system is not valid with fully-periodic topology'
-        call log_event( log_scratch_space, LOG_LEVEL_ERROR )
-      end if
-
 
       ! Check the options in the formulation namelist
       if ( .not. use_physics .and. .not. use_wavedynamics ) then
@@ -301,8 +282,8 @@ contains
           write( log_scratch_space, '(A)' ) 'Extended_mesh only valid for spherical geometry'
           call log_event( log_scratch_space, LOG_LEVEL_ERROR )
         end if
-        if ( coord_system /=  coord_system_alphabetaz ) then
-          write( log_scratch_space, '(A)' ) 'Extended_mesh only valid for alphabetaz coordinates'
+        if ( coord_system /=  coord_system_native ) then
+          write( log_scratch_space, '(A)' ) 'Extended_mesh only valid for native coordinates'
           call log_event( log_scratch_space, LOG_LEVEL_ERROR )
         end if
         if ( topology /=  topology_fully_periodic) then
@@ -319,16 +300,8 @@ contains
           write( log_scratch_space, '(A)' ) 'Special_edges_treatment only valid for spherical geometry'
           call log_event( log_scratch_space, LOG_LEVEL_ERROR )
         end if
-        if ( coord_system /=  coord_system_alphabetaz ) then
-          write( log_scratch_space, '(A)' ) 'Special_edges_treatment only valid for alphabetaz coordinates'
-          call log_event( log_scratch_space, LOG_LEVEL_ERROR )
-        end if
         if ( topology /=  topology_fully_periodic) then
           write( log_scratch_space, '(A)' ) 'Special_edges_treatment only valid for fully periodic topology'
-          call log_event( log_scratch_space, LOG_LEVEL_ERROR )
-        end if
-        if ( coord_order /= 1 ) then
-          write( log_scratch_space, '(A)' ) 'Special_edges_treatment only valid for linear coord_order'
           call log_event( log_scratch_space, LOG_LEVEL_ERROR )
         end if
       end if

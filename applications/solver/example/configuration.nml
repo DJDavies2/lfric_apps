@@ -24,8 +24,8 @@ diag_stem_name='solver',
 cellshape='quadrilateral',
 element_order=0,
 rehabilitate=.true.,
-coord_order=2,
-coord_system='xyz',
+coord_order=1,
+coord_system='native',
 /
 
 &formulation

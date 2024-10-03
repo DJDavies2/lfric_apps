@@ -64,6 +64,7 @@ contains
                                           feign_planet_config
     use initial_temperature_config_mod, &
                                    only : perturb_none
+    use sci_chi_transform_mod,     only : init_chi_transforms
 
     implicit none
 
@@ -91,9 +92,7 @@ contains
                                            pert_centre=pert_centre,               &
                                            profile_heights=profile_heights )
 
-
-
-    call feign_planet_config(                      &
+    call feign_planet_config(                                       &
                               gravity=gravity,                      &
                               radius=radius,                        &
                               omega=omega,                          &
@@ -102,6 +101,7 @@ contains
                               p_zero=p_zero,                        &
                               scaling_factor=scaling )
 
+    call init_chi_transforms()
 
   end subroutine setUp
 
@@ -109,12 +109,14 @@ contains
   subroutine tearDown( this )
 
     use configuration_mod,        only: final_configuration
+    use sci_chi_transform_mod,    only: final_chi_transforms
 
     implicit none
 
     class(tl_project_eos_pressure_test_type), intent(inout) :: this
 
     call final_configuration()
+    call final_chi_transforms()
 
   end subroutine tearDown
 

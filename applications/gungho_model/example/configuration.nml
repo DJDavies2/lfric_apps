@@ -31,7 +31,7 @@ stretching_method='linear',
   rehabilitate     = .true.
   vorticity_in_w1  = .false.
   coord_order      = 1
-  coord_system     = 'alphabetaz'
+  coord_system     = 'native'
 /
 
 &formulation

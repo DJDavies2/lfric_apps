@@ -82,7 +82,7 @@ contains
 
     call feign_shallow_water_test_coeff_config( mag1=2.0_r_def, &
                                                 u1=1.0_r_def,   &
-                                                u2=2.0_r_def,  &
+                                                u2=2.0_r_def,   &
                                                 x1=0.0_r_def,   &
                                                 xr=1.0_r_def,   &
                                                 y1=0.0_r_def,   &

@@ -42,7 +42,7 @@ lbc_filename='',
 &finite_element
 cellshape='quadrilateral',
 coord_order=1,
-coord_system='alphabetaz',
+coord_system='native',
 element_order=0,
 rehabilitate=.true.,
 vorticity_in_w1=.true.,

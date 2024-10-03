@@ -29,7 +29,7 @@ cellshape='quadrilateral',
 element_order=0,
 rehabilitate=.true.,
 coord_order=1,
-coord_system='alphabetaz'
+coord_system='native'
 vorticity_in_w1=.true.,
 /
 &initial_temperature

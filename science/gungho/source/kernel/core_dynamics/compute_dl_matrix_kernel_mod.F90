@@ -25,8 +25,6 @@ module compute_dl_matrix_kernel_mod
                                        PI, degrees_to_radians
   use sci_chi_transform_mod,     only: chi2llr
   use damping_layer_config_mod,  only: dl_type, dl_type_latitude
-  use finite_element_config_mod, only: coord_system,    &
-                                       coord_system_xyz
   use fs_continuity_mod,         only: W2
   use kernel_mod,                only: kernel_type
   use sci_coordinate_jacobian_mod, only: coordinate_jacobian

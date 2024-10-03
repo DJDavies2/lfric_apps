@@ -21,15 +21,16 @@ module assign_orography_field_mod
                                              orog_init_option_ancil, &
                                              orog_init_option_none, &
                                              orog_init_option_start_dump
-  use base_mesh_config_mod,           only : geometry, &
-                                             geometry_spherical
+  use base_mesh_config_mod,           only : geometry,                &
+                                             geometry_spherical,      &
+                                             topology,                &
+                                             topology_fully_periodic
   use finite_element_config_mod,      only : coord_system,            &
                                              coord_order,             &
-                                             coord_system_xyz,        &
-                                             coord_system_alphabetaz, &
-                                             coord_system_lonlatz
+                                             coord_system_xyz
   use mesh_collection_mod,            only : mesh_collection
-  use coord_transform_mod,            only : xyz2llr, llr2xyz, alphabetar2llr
+  use coord_transform_mod,            only : xyz2llr, llr2xyz
+  use sci_chi_transform_mod,          only : chi2llr
   use orography_helper_functions_mod, only : z2eta_linear, &
                                              eta2z_linear, &
                                              eta2z_smooth
@@ -51,8 +52,7 @@ module assign_orography_field_mod
   public :: assign_orography_field
   ! These are made public only for unit-testing
   public :: analytic_orography_spherical_xyz
-  public :: analytic_orography_spherical_alphabetaz
-  public :: analytic_orography_spherical_lonlatz
+  public :: analytic_orography_spherical_native
   public :: analytic_orography_cartesian
   public :: ancil_orography_spherical_xyz
   public :: ancil_orography_spherical_sph
@@ -214,14 +214,8 @@ contains
       if ( geometry == geometry_spherical ) then
         if ( coord_system == coord_system_xyz ) then
           analytic_orography => analytic_orography_spherical_xyz
-        else if ( coord_system == coord_system_alphabetaz ) then
-          analytic_orography => analytic_orography_spherical_alphabetaz
-        else if ( coord_system == coord_system_lonlatz ) then
-          analytic_orography => analytic_orography_spherical_lonlatz
         else
-          call log_event("Error: this coordinate system is not " // &
-                         "implemented with analytic orography", &
-                         LOG_LEVEL_ERROR)
+          analytic_orography => analytic_orography_spherical_native
         end if
       else
         analytic_orography => analytic_orography_cartesian
@@ -270,13 +264,8 @@ contains
       if ( geometry == geometry_spherical ) then
         if ( coord_system == coord_system_xyz ) then
           ancil_orography => ancil_orography_spherical_xyz
-        else if ( (coord_system == coord_system_alphabetaz) .or. &
-                  (coord_system == coord_system_lonlatz) ) then
-          ancil_orography => ancil_orography_spherical_sph
         else
-          call log_event("Error: this coordinate system is not " //  &
-                         "implemented with ancillary orography", &
-                         LOG_LEVEL_ERROR)
+          ancil_orography => ancil_orography_spherical_sph
         end if
       else
         ancil_orography => ancil_orography_cartesian
@@ -451,12 +440,12 @@ contains
   end subroutine analytic_orography_spherical_xyz
 
   !=============================================================================
-  !> @brief Updates (alpha, beta, height) vertical coordinates for a single
-  !>        column using selected analytic orography.
+  !> @brief Updates vertical coordinates when using native mesh coordinates
+  !!        for a single column using selected analytic orography.
   !>
   !> @details Calculates analytic orography from chi_1 and chi_2 horizontal
   !>          coordinates and then updates chi_3. This works directly on the
-  !>          cubed sphere (alpha,beta,r) coordinates.
+  !>          cubed sphere (alpha,beta,r) or (lon,lat,r) coordinates.
   !>
   !> @param[in]     nlayers        Number of vertical layers
   !> @param[in]     ndf_chi        Array size and loop bound for map_chi
@@ -472,19 +461,19 @@ contains
   !> @param[in,out] chi_3          3rd coordinate field in Wchi
   !> @param[in]     panel_id       Field giving the ID for mesh panels
   !=============================================================================
-  subroutine analytic_orography_spherical_alphabetaz(nlayers,        &
-                                                     ndf_chi,        &
-                                                     undf_chi,       &
-                                                     map_chi,        &
-                                                     ndf_pid,        &
-                                                     undf_pid,       &
-                                                     map_pid,        &
-                                                     domain_surface, &
-                                                     domain_top,     &
-                                                     chi_1,          &
-                                                     chi_2,          &
-                                                     chi_3,          &
-                                                     panel_id)
+  subroutine analytic_orography_spherical_native(nlayers,        &
+                                                 ndf_chi,        &
+                                                 undf_chi,       &
+                                                 map_chi,        &
+                                                 ndf_pid,        &
+                                                 undf_pid,       &
+                                                 map_pid,        &
+                                                 domain_surface, &
+                                                 domain_top,     &
+                                                 chi_1,          &
+                                                 chi_2,          &
+                                                 chi_3,          &
+                                                 panel_id)
 
     implicit none
 
@@ -500,7 +489,7 @@ contains
     integer(kind=i_def) :: k, df, dfk, ipanel
     real(kind=r_def)    :: surface_height, domain_depth
     real(kind=r_def)    :: eta
-    real(kind=r_def)    :: longitude, latitude, radius
+    real(kind=r_def)    :: longitude, latitude, radius, dummy_radius
 
     domain_depth = domain_top - domain_surface
 
@@ -511,11 +500,11 @@ contains
       do k = 0, nlayers-1
         dfk = map_chi(df)+k
 
-        ! Model coordinates for spherical domain are in (alpha,beta,r) form
-        ! They need to be converted to (long,lat,r) for reading analytic orog
+        ! Model coordinates need to be converted to (long,lat,r) for reading
+        ! analytic orography
         radius = chi_3(dfk) + domain_surface
-        call alphabetar2llr(chi_1(dfk), chi_2(dfk), radius, &
-                            ipanel, longitude, latitude)
+        call chi2llr(chi_1(dfk), chi_2(dfk), radius, &
+                     ipanel, longitude, latitude, dummy_radius)
 
         ! Calculate surface height for each DoF using selected analytic orography
         surface_height = orography_profile%analytic_orography(longitude, latitude)
@@ -534,86 +523,7 @@ contains
       end do
     end do
 
-  end subroutine analytic_orography_spherical_alphabetaz
-
-  !=============================================================================
-  !> @brief Updates (longitude, latitude, h) vertical coordinates for a single
-  !>        column using selected analytic orography.
-  !>
-  !> @details Calculates analytic orography from chi_1 and chi_2 horizontal
-  !>          coordinates and then updates chi_3. This works directly on the
-  !>          (longitude, latitude) coordinates.
-  !>
-  !> @param[in]     nlayers        Number of vertical layers
-  !> @param[in]     ndf_chi        Array size and loop bound for map_chi
-  !> @param[in]     undf_chi       Column coordinates' array size and loop bound
-  !> @param[in]     map_chi        Indirection map for coordinate field
-  !> @param[in]     ndf_pid        Array size and loop bound for map_pid
-  !> @param[in]     undf_pid       Panel ID array size and loop bound
-  !> @param[in]     map_pid        Indirection map for panel_id
-  !> @param[in]     domain_surface Physical height of flat domain surface (m)
-  !> @param[in]     domain_top     Physical height of domain top (m)
-  !> @param[in,out] chi_1          1st coordinate field in Wchi
-  !> @param[in,out] chi_2          2nd coordinate field in Wchi
-  !> @param[in,out] chi_3          3rd coordinate field in Wchi
-  !> @param[in]     panel_id       Field giving the ID for mesh panels
-  !=============================================================================
-  subroutine analytic_orography_spherical_lonlatz(nlayers,        &
-                                                  ndf_chi,        &
-                                                  undf_chi,       &
-                                                  map_chi,        &
-                                                  ndf_pid,        &
-                                                  undf_pid,       &
-                                                  map_pid,        &
-                                                  domain_surface, &
-                                                  domain_top,     &
-                                                  chi_1,          &
-                                                  chi_2,          &
-                                                  chi_3,          &
-                                                  panel_id)
-
-    implicit none
-
-    ! Arguments
-    integer(kind=i_def), intent(in)    :: nlayers, undf_chi, undf_pid
-    integer(kind=i_def), intent(in)    :: ndf_chi, ndf_pid
-    integer(kind=i_def), intent(in)    :: map_chi(ndf_chi)
-    integer(kind=i_def), intent(in)    :: map_pid(ndf_pid)
-    real(kind=r_def),    intent(in)    :: domain_surface, domain_top
-    real(kind=r_def),    intent(inout) :: chi_1(undf_chi), chi_2(undf_chi), chi_3(undf_chi)
-    real(kind=r_def),    intent(in)    :: panel_id(undf_pid)
-    ! Internal variables
-    integer(kind=i_def) :: k, df, dfk
-    real(kind=r_def)    :: surface_height, domain_depth
-    real(kind=r_def)    :: eta
-
-    domain_depth = domain_top - domain_surface
-
-    ! Calculate orography and update chi_3
-    do df = 1, ndf_chi
-      do k = 0, nlayers-1
-        dfk = map_chi(df)+k
-
-        ! Model coordinates for spherical domain are in (lon,lat,r) form
-        ! Must be in (lon,lat,r) for reading analytic orography so don't convert
-        ! Calculate surface height for each DoF using selected analytic orography
-        surface_height = orography_profile%analytic_orography(chi_1(dfk), chi_2(dfk))
-
-        ! Calculate nondimensional coordinate from current height coordinate
-        ! (chi_3) with flat domain_surface
-        eta = z2eta_linear(chi_3(dfk), 0.0_r_def, domain_depth)
-
-        select case(stretching_method)
-        case(stretching_method_linear)
-          chi_3(dfk) = eta2z_linear(eta, surface_height, domain_depth)
-        case default
-          chi_3(dfk) = eta2z_smooth(eta, surface_height, domain_depth, stretching_height)
-        end select
-
-      end do
-    end do
-
-  end subroutine analytic_orography_spherical_lonlatz
+  end subroutine analytic_orography_spherical_native
 
   !=============================================================================
   !> @brief Updates Cartesian vertical coordinate for a single column using

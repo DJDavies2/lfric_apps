@@ -56,7 +56,7 @@ lbc_filename='lbc',
 &finite_element
 cellshape='quadrilateral',
 coord_order=1,
-coord_system='xyz',
+coord_system='native',
 element_order=0,
 rehabilitate=.true.,
 vorticity_in_w1=.false.,

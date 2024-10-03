@@ -267,8 +267,8 @@ start_dump_directory = ''
 &finite_element
         ! These do not need changing
 cellshape       = 'quadrilateral'
-coord_order     = 2
-coord_system    ='xyz'
+coord_order     = 1
+coord_system    = 'native'
 element_order   = 0
 rehabilitate    = .true.
 vorticity_in_w1 = .true.

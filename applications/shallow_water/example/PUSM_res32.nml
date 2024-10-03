@@ -1,5 +1,5 @@
 &mesh
-  mesh_filename     = 'PUSM_res32.nc'
+  mesh_file_prefix  = 'PUSM_res32'
   n_meshes          = 1
   mesh_names        = 'dynamics'
   partition_mesh    = .false.

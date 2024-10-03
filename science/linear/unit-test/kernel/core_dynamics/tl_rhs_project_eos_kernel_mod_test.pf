@@ -63,6 +63,7 @@ contains
                                           feign_finite_element_config
     use initial_temperature_config_mod, &
                                    only : perturb_none
+    use sci_chi_transform_mod,     only : init_chi_transforms
 
     implicit none
 
@@ -89,18 +90,22 @@ contains
                                            profile_data=profile_data,             &
                                            profile_heights=profile_heights )
 
+    call init_chi_transforms()
+
   end subroutine setUp
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   subroutine tearDown( this )
 
     use configuration_mod,        only: final_configuration
+    use sci_chi_transform_mod,    only: final_chi_transforms
 
     implicit none
 
     class(tl_rhs_project_eos_test_type), intent(inout) :: this
 
     call final_configuration()
+    call final_chi_transforms()
 
   end subroutine tearDown
 

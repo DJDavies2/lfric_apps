@@ -71,6 +71,7 @@ contains
                                         lambda_centre, phi_centre, &
                                         lambda_focus, phi_focus
     use extrusion_config_mod,    only : method_uniform, stretching_method_linear
+    use sci_chi_transform_mod,   only : init_chi_transforms
 
     implicit none
 
@@ -132,12 +133,15 @@ contains
                                               lambda_focus,         &
                                               phi_focus ) )
 
+    call init_chi_transforms()
+
   end subroutine setUp
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   subroutine tearDown(this)
 
     use configuration_mod,        only: final_configuration
+    use sci_chi_transform_mod,    only: final_chi_transforms
 
     implicit none
 
@@ -145,6 +149,7 @@ contains
 
     deallocate( orography_profile )
     call final_configuration()
+    call final_chi_transforms()
 
   end subroutine tearDown
 

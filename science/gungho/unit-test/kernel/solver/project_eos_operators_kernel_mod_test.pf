@@ -65,6 +65,7 @@ contains
                                           feign_finite_element_config
     use initial_temperature_config_mod, &
                                    only : perturb_none
+    use sci_chi_transform_mod,     only : init_chi_transforms
 
     implicit none
 
@@ -95,18 +96,22 @@ contains
                               rd=rd, cp=cp, p_zero=p_zero,                 &
                               scaling_factor=scaling )
 
+    call init_chi_transforms()
+
   end subroutine setUp
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   subroutine tearDown( this )
 
     use configuration_mod,        only: final_configuration
+    use sci_chi_transform_mod,    only: final_chi_transforms
 
     implicit none
 
     class(project_eos_operators_test_type), intent(inout) :: this
 
     call final_configuration()
+    call final_chi_transforms()
 
   end subroutine tearDown
 
