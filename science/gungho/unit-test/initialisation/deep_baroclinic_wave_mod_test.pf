@@ -85,6 +85,7 @@ contains
                                   lagged_orog=.false.,                     &
                                   moisture_formulation =                   &
                                   moisture_formulation_dry,                &
+                                  moisture_in_solver=.true.,               &
                                   p2theta_vert=.true.,                     &
                                   shallow=.false., use_physics=.false.,    &
                                   use_wavedynamics=.true.,                 &

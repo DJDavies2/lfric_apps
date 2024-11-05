@@ -38,6 +38,7 @@ stretching_method='linear',
 &formulation
   l_multigrid           = .true.
   moisture_formulation  = 'dry'
+  moisture_in_solver    = .true.
   p2theta_vert          = .false.
   rotating              = .true.
   shallow               = .false.

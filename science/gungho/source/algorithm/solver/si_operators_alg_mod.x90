@@ -39,11 +39,12 @@ module si_operators_alg_mod
                                        eos_method,           &
                                        eos_method_sampled,   &
                                        eos_method_projected, &
-                                       p2theta_vert
+                                       p2theta_vert,         &
+                                       moisture_in_solver
   use multigrid_config_mod,      only: multigrid_chain_nitems
   use mixed_solver_config_mod,   only: eliminate_variables, &
                                        eliminate_variables_analytic
-  use moist_dyn_mod,             only: num_moist_factors
+  use moist_dyn_mod,             only: num_moist_factors, gas_law, total_mass
 
   implicit none
   private
@@ -453,6 +454,8 @@ contains
     type(r_solver_field_type)              :: rsol_w2_rmultiplicity
     type(r_solver_operator_type)           :: m2_r_solver
     type(r_solver_field_type),     pointer :: detj_at_w3 => null()
+    type(field_type)                       :: moist_dyn_factor_rdef
+    type(r_solver_field_type)              :: moist_dyn_factor, theta_v
 
     ! For continuous fields the default looping depth is to the depth 1 halo
     ! and so for any fields that are accessed with a stencil the halo_depth
@@ -478,6 +481,18 @@ contains
     if (dry_static_adjust) &
       call invoke( sort_ref_kernel_type(theta) )
 
+    ! Compute moist dynamics factor
+    ! For momentum equation, need theta_v = theta * (1 + mv/eps) / (1 + sum{mr})
+    call moist_dyn_factor%initialise( wt_fs )
+    if (moisture_in_solver) then
+      call moist_dyn_factor_rdef%initialise( wt_fs )
+      call invoke( X_divideby_Y(moist_dyn_factor_rdef, moist_dyn_ref(gas_law), moist_dyn_ref(total_mass)) )
+      call invoke_copy_to_rsolver(moist_dyn_factor, moist_dyn_factor_rdef)
+    else
+      ! Set factor to 1 and everything else will be unchanged
+      call invoke( setval_c(moist_dyn_factor, 1.0_r_solver) )
+    end if
+
     ! Set the function space chains to the finest levels.
     if (l_multigrid) then
        call multigrid_function_space_chain%set_current(w3_fs%get_id())
@@ -501,6 +516,11 @@ contains
        panel_id => get_panel_id( mesh%get_id() )
 
        u_normalisation => get_normalisation_r_solver(W2, mesh%get_id())
+
+       ! Set reference theta_v, by multiply theta by moisture factor
+       call theta_v%initialise( vector_space = theta%get_function_space(),     &
+                                halo_depth = req_halo_depth )
+       call invoke( X_times_Y(theta_v, theta, moist_dyn_factor) )
 
        ! Non-topological operators
        call exner_in_wth%initialise( vector_space = theta%get_function_space() )
@@ -533,7 +553,6 @@ contains
        end select
 
        if ( eliminate_variables == eliminate_variables_analytic ) then
-
          call invoke( eliminated_theta_q22_kernel_type(eliminated_q22(level), theta,       &
                                                        exner_in_wth, u_normalisation,      &
                                                        chi, panel_id, const1, qr) )
@@ -567,24 +586,29 @@ contains
        const2 = real(tau_t*dt, r_solver)
        const3 = real(tau_r*dt, r_solver)
        div => get_im3_div_r_solver(mesh%get_id())
+
        if ( p2theta_vert ) then
          ! The projection operators are restricted to use the vertical only
-         call invoke( weighted_proj_2thetav_kernel_type(p2theta(level), exner, const1, qr), &
+         call invoke( weighted_proj_2thetav_kernel_type(p2theta(level), exner, &
+                                                        moist_dyn_factor,      &
+                                                        const1, qr),           &
                       weighted_proj_theta2v_kernel_type(ptheta2(level), theta, const2, qr) )
        else
          ! The projection operators use horizonal and vertical
-         call invoke( weighted_proj_2theta_kernel_type(p2theta(level), exner, const1, qr), &
+         call invoke( weighted_proj_2theta_kernel_type(p2theta(level), exner,  &
+                                                       moist_dyn_factor, const1, qr), &
                       weighted_proj_theta2_kernel_type(ptheta2(level), theta, const2, qr), &
                       weighted_proj_theta2_bd_kernel_type(ptheta2(level), theta,           &
                                                           req_stencil_depth, const2, qrf), &
                       weighted_proj_2theta_bd_kernel_type(p2theta(level), exner,           &
-                                                          req_stencil_depth, const1, qrf) )
+                                                          req_stencil_depth,               &
+                                                          moist_dyn_factor, const1, qrf) )
        end if
        call invoke( name = "cell_and_boundary_kernels_vert",                          &
-          weighted_div_kernel_type(div_star(level), theta, const1, qr),               &
+          weighted_div_kernel_type(div_star(level), theta_v, const1, qr),             &
           weighted_proj_theta2_vert_kernel_type(ptheta2v(level), theta, const2, qr),  &
           ! Boundary kernels
-          weighted_div_bd_kernel_type(div_star(level), theta, req_stencil_depth,      &
+          weighted_div_bd_kernel_type(div_star(level), theta_v, req_stencil_depth,    &
                                       const1, qrf),                                   &
           ! Compound operators
           compound_operator_kernel_type( compound_div(level), m3_rho_star(level),     &
@@ -740,6 +764,13 @@ contains
              call theta%initialise(vector_space = wt_fs, halo_depth=req_halo_depth )
              ! call restrict
              call invoke( restrict_scalar_unweighted_kernel_type(theta, coarse_field) )
+
+             ! copy current field to coarse field
+             call moist_dyn_factor%copy_field_properties(coarse_field)
+             call invoke( setval_X(coarse_field, moist_dyn_factor) )
+             call moist_dyn_factor%initialise(vector_space = wt_fs)
+             ! call restrict
+             call invoke( restrict_scalar_unweighted_kernel_type(moist_dyn_factor, coarse_field) )
 
              ! copy current field to coarse field
              call rho%copy_field_properties(coarse_field)

@@ -37,9 +37,10 @@ module weighted_proj_2theta_kernel_mod
 
   type, public, extends(kernel_type) :: weighted_proj_2theta_kernel_type
     private
-    type(arg_type) :: meta_args(3) = (/                             &
+    type(arg_type) :: meta_args(4) = (/                             &
          arg_type(GH_OPERATOR, GH_REAL, GH_WRITE, W2, ANY_SPACE_9), &
          arg_type(GH_FIELD,    GH_REAL, GH_READ,  W3),              &
+         arg_type(GH_FIELD,    GH_REAL, GH_READ,  ANY_SPACE_9),     &
          arg_type(GH_SCALAR,   GH_REAL, GH_READ)                    &
          /)
     type(func_type) :: meta_funcs(3) = (/                           &
@@ -66,12 +67,15 @@ contains
 !! @param[in] ncell_3d ncell*ndf
 !! @param[in,out] projection Projection operator to compute
 !! @param[in] exner Exner pressure
+!! @param[in] moist_dyn_factor The moist dynamics factor for theta
 !! @param[in] scalar Real to scale matrix by
 !! @param[in] ndf_w2 Number of degrees of freedom per cell
 !! @param[in] basis_w2 Basis functions evaluated at quadrature points
 !! @param[in] diff_basis_w2 Differential vector basis functions evaluated
 !!                          at quadrature points
 !! @param[in] ndf_wtheta Number of degrees of freedom per cell
+!! @param[in] undf_wtheta Number of unique degrees of freedom for Wtheta
+!! @param[in] map_wtheta Dofmap for Wtheta
 !! @param[in] basis_wtheta Basis functions evaluated at quadrature points
 !! @param[in] diff_basis_wtheta Differential vector basis functions
 !!                              evaluated at quadrature points
@@ -86,9 +90,10 @@ contains
 subroutine weighted_proj_2theta_code(cell, nlayers, ncell_3d,             &
                                      projection,                          &
                                      exner,                               &
+                                     moist_dyn_factor,                    &
                                      scalar,                              &
                                      ndf_w2, basis_w2, diff_basis_w2,     &
-                                     ndf_wtheta,                          &
+                                     ndf_wtheta, undf_wtheta, map_wtheta, &
                                      basis_wtheta, diff_basis_wtheta,     &
                                      ndf_w3, undf_w3, map_w3, basis_w3,   &
                                      nqp_h, nqp_v, wqp_h, wqp_v)
@@ -96,11 +101,13 @@ subroutine weighted_proj_2theta_code(cell, nlayers, ncell_3d,             &
   implicit none
 
   ! Arguments
-  integer(kind=i_def),                     intent(in) :: cell, nqp_h, nqp_v
-  integer(kind=i_def),                     intent(in) :: nlayers
-  integer(kind=i_def),                     intent(in) :: ncell_3d
-  integer(kind=i_def),                     intent(in) :: undf_w3, ndf_w3, ndf_w2, ndf_wtheta
-  integer(kind=i_def), dimension(ndf_w3),  intent(in) :: map_w3
+  integer(kind=i_def),                        intent(in) :: cell, nqp_h, nqp_v
+  integer(kind=i_def),                        intent(in) :: nlayers
+  integer(kind=i_def),                        intent(in) :: ncell_3d
+  integer(kind=i_def),                        intent(in) :: undf_w3, ndf_w3, ndf_w2
+  integer(kind=i_def),                        intent(in) :: undf_wtheta, ndf_wtheta
+  integer(kind=i_def), dimension(ndf_w3),     intent(in) :: map_w3
+  integer(kind=i_def), dimension(ndf_wtheta), intent(in) :: map_wtheta
 
   real(kind=r_def), dimension(1,ndf_w3,nqp_h,nqp_v),     intent(in) :: basis_w3
   real(kind=r_def), dimension(1,ndf_w2,nqp_h,nqp_v),     intent(in) :: diff_basis_w2
@@ -110,6 +117,7 @@ subroutine weighted_proj_2theta_code(cell, nlayers, ncell_3d,             &
 
   real(kind=r_solver), dimension(ndf_w2,ndf_wtheta,ncell_3d), intent(inout) :: projection
   real(kind=r_solver), dimension(undf_w3),                    intent(in)    :: exner
+  real(kind=r_solver), dimension(undf_wtheta),                intent(in)    :: moist_dyn_factor
   real(kind=r_solver),                                        intent(in)    :: scalar
 
   real(kind=r_def), dimension(nqp_h), intent(in) :: wqp_h
@@ -156,8 +164,9 @@ subroutine weighted_proj_2theta_code(cell, nlayers, ncell_3d,             &
             div_gamma_v = rsol_diff_basis_w2(1,df2,qp1,qp2)*rsol_basis_wtheta(1,df0,qp1,qp2) &
                         + dot_product(rsol_basis_w2(:,df2,qp1,qp2), &
                                       rsol_diff_basis_wtheta(:,df0,qp1,qp2))
+
             projection(df2,df0,ik) = projection(df2,df0,ik) &
-                                   + integrand*div_gamma_v
+                                   + integrand*div_gamma_v*moist_dyn_factor(map_wtheta(df0)+k)
           end do
         end do
       end do

@@ -80,6 +80,7 @@ contains
                                    shallow=.false.,                 &
                                    moisture_formulation =           &
                                    moisture_formulation_dry,        &
+                                   moisture_in_solver=.true.,       &
                                    p2theta_vert=.true.,             &
                                    use_physics=.false.,             &
                                    use_wavedynamics=.false.,        &

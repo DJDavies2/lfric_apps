@@ -40,9 +40,10 @@ module weighted_proj_2theta_bd_kernel_mod
   !> PSy layer.
   type, public, extends(kernel_type) :: weighted_proj_2theta_bd_kernel_type
     private
-    type(arg_type) :: meta_args(3) = (/                                     &
+    type(arg_type) :: meta_args(4) = (/                                     &
          arg_type(GH_OPERATOR, GH_REAL, GH_READWRITE, W2, Wtheta),          &
          arg_type(GH_FIELD,    GH_REAL, GH_READ,      W3, STENCIL(CROSS)),  &
+         arg_type(GH_FIELD,    GH_REAL, GH_READ,      Wtheta),              &
          arg_type(GH_SCALAR,   GH_REAL, GH_READ)                            &
          /)
     type(func_type) :: meta_funcs(3) = (/                                   &
@@ -79,11 +80,14 @@ contains
   !> @param[in] exner Exner presssure
   !> @param[in] stencil_w3_size Size of the W3 stencil (number of cells)
   !> @param[in] stencil_w3_map W3 dofmaps for the stencil
+  !> @param[in] moist_dyn_factor The moist dynamics factor for theta
   !> @param[in] scalar Real to scale matrix by
   !> @param[in] ndf_w2 Number of degrees of freedom per cell for W2
   !> @param[in] w2_basis_face W2 basis functions evaluated at Gaussian
   !!                          quadrature points on horizontal faces
-  !> @param[in] ndf_wtheta Number of degrees of freedom per cell for Wtheta
+  !> @param[in] ndf_wt Number of degrees of freedom per cell for Wtheta
+  !> @param[in] undf_wt Number of unique degrees of freedom for Wtheta
+  !> @param[in] map_wt Dofmap for Wtheta
   !> @param[in] wtheta_basis_face Wtheta basis functions evaluated at Gaussian
   !!                              quadrature points on horizontal faces
   !> @param[in] ndf_w3 Number of degrees of freedom per cell for W3
@@ -105,9 +109,11 @@ contains
   subroutine weighted_proj_2theta_bd_code( cell, nlayers, ncell_3d,         &
                                            projection, exner,               &
                                            stencil_w3_size, stencil_w3_map, &
+                                           moist_dyn_factor,                &
                                            scalar,                          &
                                            ndf_w2, w2_basis_face,           &
-                                           ndf_wtheta, wtheta_basis_face,   &
+                                           ndf_wt, undf_wt, map_wt,         &
+                                           wt_basis_face,                   &
                                            ndf_w3, undf_w3, map_w3,         &
                                            w3_basis_face,                   &
                                            nfaces_re_h,                     &
@@ -124,22 +130,24 @@ contains
     integer(kind=i_def), intent(in) :: nlayers
     integer(kind=i_def), intent(in) :: nfaces_qr, nqp_f
     integer(kind=i_def), intent(in) :: ncell_3d
-    integer(kind=i_def), intent(in) :: undf_w3, ndf_w3, ndf_w2, ndf_wtheta
+    integer(kind=i_def), intent(in) :: undf_w3, ndf_w3, ndf_w2, ndf_wt, undf_wt
     integer(kind=i_def), intent(in) :: nfaces_re_h
 
     integer(kind=i_def), intent(in) :: stencil_w3_size
     integer(kind=i_def), dimension(ndf_w3, stencil_w3_size), intent(in) :: stencil_w3_map
 
-    integer(kind=i_def), dimension(ndf_w3), intent(in) :: map_w3
+    integer(kind=i_def), dimension(ndf_w3),     intent(in) :: map_w3
+    integer(kind=i_def), dimension(ndf_wt),     intent(in) :: map_wt
 
-    real(kind=r_def), dimension(3,ndf_w2,nqp_f,nfaces_qr),     intent(in) :: w2_basis_face
-    real(kind=r_def), dimension(1,ndf_w3,nqp_f,nfaces_qr),     intent(in) :: w3_basis_face
-    real(kind=r_def), dimension(1,ndf_wtheta,nqp_f,nfaces_qr), intent(in) :: wtheta_basis_face
-    real(kind=r_def), dimension(nqp_f,nfaces_qr),              intent(in) :: wqp_f
+    real(kind=r_def), dimension(3,ndf_w2,nqp_f,nfaces_qr), intent(in) :: w2_basis_face
+    real(kind=r_def), dimension(1,ndf_w3,nqp_f,nfaces_qr), intent(in) :: w3_basis_face
+    real(kind=r_def), dimension(1,ndf_wt,nqp_f,nfaces_qr), intent(in) :: wt_basis_face
+    real(kind=r_def), dimension(nqp_f,nfaces_qr),          intent(in) :: wqp_f
 
-    real(kind=r_solver), dimension(ndf_w2,ndf_wtheta,ncell_3d), intent(inout) :: projection
-    real(kind=r_solver), dimension(undf_w3),                    intent(in)    :: exner
-    real(kind=r_solver),                                        intent(in)    :: scalar
+    real(kind=r_solver), dimension(ndf_w2,ndf_wt,ncell_3d), intent(inout) :: projection
+    real(kind=r_solver), dimension(undf_w3),                intent(in)    :: exner
+    real(kind=r_solver), dimension(undf_wt),                intent(in)    :: moist_dyn_factor
+    real(kind=r_solver),                                    intent(in)    :: scalar
 
     integer(kind=i_def), intent(in) :: adjacent_face(:)
 
@@ -155,10 +163,10 @@ contains
                                               exner_next_at_fquad, &
                                               exner_av
 
-    real(kind=r_solver), dimension(3,ndf_w2,nqp_f,nfaces_qr)     :: rsol_w2_basis_face
-    real(kind=r_solver), dimension(1,ndf_w3,nqp_f,nfaces_qr)     :: rsol_w3_basis_face
-    real(kind=r_solver), dimension(1,ndf_wtheta,nqp_f,nfaces_qr) :: rsol_wtheta_basis_face
-    real(kind=r_solver), dimension(nqp_f,nfaces_qr)              :: rsol_wqp_f
+    real(kind=r_solver), dimension(3,ndf_w2,nqp_f,nfaces_qr) :: rsol_w2_basis_face
+    real(kind=r_solver), dimension(1,ndf_w3,nqp_f,nfaces_qr) :: rsol_w3_basis_face
+    real(kind=r_solver), dimension(1,ndf_wt,nqp_f,nfaces_qr) :: rsol_wt_basis_face
+    real(kind=r_solver), dimension(nqp_f,nfaces_qr)          :: rsol_wqp_f
 
     ! If we're near the edge of the regional domain then the
     ! stencil size will be less that 5 so don't do anything here
@@ -167,7 +175,7 @@ contains
 
     rsol_w2_basis_face = real(w2_basis_face, r_solver)
     rsol_w3_basis_face = real(w3_basis_face, r_solver)
-    rsol_wtheta_basis_face = real(wtheta_basis_face, r_solver)
+    rsol_wt_basis_face = real(wt_basis_face, r_solver)
     rsol_wqp_f = real(wqp_f, r_solver)
 
 
@@ -192,9 +200,9 @@ contains
           end do
           exner_av = 0.5_r_solver*(exner_at_fquad + exner_next_at_fquad)
 
-          do df0 = 1, ndf_wtheta
+          do df0 = 1, ndf_wt
             normal = real(outward_normals(:,face), r_solver) &
-                    *rsol_wtheta_basis_face(1,df0,qp,face)
+                    *moist_dyn_factor(map_wt(df0)+k)*rsol_wt_basis_face(1,df0,qp,face)
             do df2 = 1, ndf_w2
               v  = rsol_w2_basis_face(:,df2,qp,face)
 
