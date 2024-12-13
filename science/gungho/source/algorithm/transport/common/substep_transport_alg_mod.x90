@@ -11,7 +11,6 @@ module substep_transport_alg_mod
   use check_configuration_mod,           only: check_any_splitting_hvh, &
                                                check_any_splitting_vhv
   use constants_mod,                     only: i_def, l_def, r_def, r_tran
-  use fem_constants_mod,                 only: get_detj_at_w3_r_tran
   use field_mod,                         only: field_type
   use fs_continuity_mod,                 only: W2H, W2V, W3
   use function_space_mod,                only: function_space_type
@@ -22,6 +21,7 @@ module substep_transport_alg_mod
                                                LOG_LEVEL_ERROR
   use mesh_mod,                          only: mesh_type
   use r_tran_field_mod,                  only: r_tran_field_type
+  use transport_constants_mod,           only: get_detj_at_w3_r_tran
 
   ! Algorithms and kernels
   use calc_departure_wind_kernel_mod,    only: calc_departure_wind_kernel_type

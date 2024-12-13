@@ -21,7 +21,8 @@ module gravity_wave_infrastructure_mod
   use extrusion_mod,              only : extrusion_type,         &
                                          uniform_extrusion_type, &
                                          TWOD, PRIME_EXTRUSION
-  use geometric_constants_mod,    only : get_chi_inventory,  &
+  use sci_geometric_constants_mod,        &
+                                  only : get_chi_inventory,  &
                                          get_panel_id_inventory
   use inventory_by_mesh_mod,      only : inventory_by_mesh_type
   use log_mod,                    only : log_event,          &
@@ -68,7 +69,6 @@ contains
     character(str_def), allocatable :: twod_names(:)
 
     character(str_def), allocatable :: tmp_mesh_names(:)
-    logical(l_def)                  :: create_rdef_div_operators
 
     class(extrusion_type),         allocatable :: extrusion
     type(uniform_extrusion_type),  allocatable :: extrusion_2d
@@ -231,13 +231,7 @@ contains
     ! Setup constants
     !-------------------------------------------------------------------------
 
-    ! Create runtime_constants object. This in turn creates various things
-    ! needed by the timestepping algorithms such as mass matrix operators, mass
-    ! matrix diagonal fields and the geopotential field and limited area masks.
-    create_rdef_div_operators = .true.
-    call create_runtime_constants( modeldb%configuration, chi_inventory, &
-                                   panel_id_inventory, modeldb%clock,    &
-                                   create_rdef_div_operators )
+    call create_runtime_constants()
 
 
     nullify(chi_inventory, panel_id_inventory)

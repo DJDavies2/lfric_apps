@@ -70,7 +70,7 @@ contains
   !> @return    self  The constructed preconditioner object
   function swe_mixed_diag_preconditioner_constructor(state) result(self)
 
-    use fem_constants_mod, only: get_mass_matrix_diagonal
+    use sci_fem_constants_mod, only: get_mass_matrix_diagonal
 
     implicit none
 

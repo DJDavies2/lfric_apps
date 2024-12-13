@@ -28,7 +28,7 @@ module shallow_water_model_mod
   use field_mod,                      only: field_type
   use field_parent_mod,               only: write_interface
   use field_collection_mod,           only: field_collection_type
-  use geometric_constants_mod,        only: get_chi_inventory, &
+  use sci_geometric_constants_mod,    only: get_chi_inventory, &
                                             get_panel_id_inventory
   use inventory_by_mesh_mod,          only: inventory_by_mesh_type
   use lfric_xios_file_mod,            only: lfric_xios_file_type
@@ -80,7 +80,6 @@ module shallow_water_model_mod
     procedure(filelist_populator), pointer :: files_init_ptr     => null()
 
     character(len=*),   parameter   :: io_context_name = "shallow_water"
-    logical(l_def)                  :: create_rdef_div_operators
 
     character(str_def), allocatable :: base_mesh_names(:)
     character(str_def), allocatable :: twod_names(:)
@@ -220,13 +219,7 @@ module shallow_water_model_mod
     ! Setup constants
     !-------------------------------------------------------------------------
 
-    ! Create runtime_constants object. This in turn creates various things
-    ! needed by the timestepping algorithms such as mass matrix operators, mass
-    ! matrix diagonal fields and the geopotential field
-    create_rdef_div_operators = .true.
-    call create_runtime_constants( modeldb%configuration, chi_inventory, &
-                                   panel_id_inventory, modeldb%clock,    &
-                                   create_rdef_div_operators )
+    call create_runtime_constants()
 
     deallocate(base_mesh_names)
     nullify(chi_inventory, panel_id_inventory)

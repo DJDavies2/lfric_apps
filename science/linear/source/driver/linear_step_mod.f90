@@ -18,7 +18,7 @@ module linear_step_mod
   use formulation_config_mod,         only : moisture_formulation,     &
                                              moisture_formulation_dry, &
                                              use_physics
-  use geometric_constants_mod,        only : get_da_at_w2
+  use sci_geometric_constants_mod,    only : get_da_at_w2
   use gungho_modeldb_mod,             only : modeldb_type
   use io_config_mod,                  only : write_conservation_diag, &
                                              write_minmax_tseries

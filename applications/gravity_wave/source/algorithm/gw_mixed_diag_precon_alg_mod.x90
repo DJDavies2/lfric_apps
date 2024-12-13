@@ -82,7 +82,7 @@ contains
                                                  b_space_w0, &
                                                  b_space_w3, &
                                                  b_space_wtheta
-    use fem_constants_mod,                 only: get_mass_matrix_diagonal
+    use sci_fem_constants_mod,             only: get_mass_matrix_diagonal
     use fs_continuity_mod,                 only: W0, W2, W3, Wtheta
     use field_indices_mod,                 only: igw_u
     use mesh_mod,                          only: mesh_type

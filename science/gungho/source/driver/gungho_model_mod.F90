@@ -43,7 +43,8 @@ module gungho_model_mod
   use field_spec_mod,             only : field_spec_type, processor_type, &
                                          space_has_xios_io
   use lfric_xios_diag_mod,        only : set_variable
-  use geometric_constants_mod,    only : get_chi_inventory, get_panel_id_inventory
+  use sci_geometric_constants_mod,       &
+                                  only : get_chi_inventory, get_panel_id_inventory
   use gungho_extrusion_mod,       only : create_extrusion
   use gungho_modeldb_mod,         only : modeldb_type
   use gungho_setup_io_mod,        only : init_gungho_files
@@ -323,8 +324,6 @@ contains
     use base_mesh_config_mod, only: GEOMETRY_PLANAR, &
                                     GEOMETRY_SPHERICAL
 
-    use section_choice_config_mod, only: stochastic_physics, &
-                                         stochastic_physics_none
 #ifdef UM_PHYSICS
     use formulation_config_mod,    only: use_physics
     use section_choice_config_mod, only: radiation, &
@@ -372,8 +371,6 @@ contains
     character(str_def), allocatable :: meshes_to_double(:)
     character(str_def), allocatable :: tmp_mesh_names(:)
     character(str_def), allocatable :: extra_io_mesh_names(:)
-    logical(l_def)                  :: create_rdef_div_operators
-
     character(str_def), allocatable :: chain_mesh_tags(:)
     character(str_def), allocatable :: multires_coupling_mesh_tags(:)
     character(str_def), allocatable :: twod_names(:)
@@ -787,19 +784,7 @@ contains
     !=======================================================================
     ! 6.0 Initialise runtime constants
     !=======================================================================
-    ! Create runtime_constants object. This in turn creates various things
-    ! needed by the timestepping algorithms such as mass matrix operators, mass
-    ! matrix diagonal fields and the geopotential field
-    if (stochastic_physics /= stochastic_physics_none) then
-      create_rdef_div_operators = .true.
-    else
-      create_rdef_div_operators = .false.
-    end if
-    call create_runtime_constants( modeldb%configuration, &
-                                   chi_inventory,         &
-                                   panel_id_inventory,    &
-                                   modeldb%clock,         &
-                                   create_rdef_div_operators )
+    call create_runtime_constants()
 
 #ifdef UM_PHYSICS
     if ( use_physics ) then

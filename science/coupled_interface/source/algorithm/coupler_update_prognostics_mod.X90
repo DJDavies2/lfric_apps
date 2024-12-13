@@ -9,6 +9,7 @@
 
 module coupler_update_prognostics_mod
   use field_mod,                     only: field_type, field_proxy_type
+  use fs_continuity_mod,             only: W3
   use function_space_mod,            only: function_space_type
   use integer_field_mod,             only: integer_field_type
   use mesh_mod,                      only: mesh_type
@@ -21,7 +22,7 @@ module coupler_update_prognostics_mod
   use sci_multi_extract_kernel_mod,  only: multi_extract_kernel_type
   use sci_multi_insert_kernel_mod,   only: multi_insert_kernel_type
   use sci_masked_multi_insert_kernel_mod, only: masked_multi_insert_kernel_type
-  use geometric_constants_mod,       only: get_latitude
+  use sci_geometric_constants_mod,   only: get_latitude
 #if defined(UM_PHYSICS)
   use jules_control_init_mod,        only: n_sea_tile, first_sea_tile, &
                                            first_sea_ice_tile, n_surf_tile, &
@@ -89,7 +90,7 @@ module coupler_update_prognostics_mod
         call depository%get_field('tile_fraction', fld_ptr1)
         call depository%get_field('sea_ice_thickness', fld_ptr2)
         twod_mesh => fld_ptr2%get_mesh()
-        lat => get_latitude( twod_mesh%get_id() )
+        lat => get_latitude( W3, twod_mesh%get_id() )
 #if defined(UM_PHYSICS)
         ! Update tile_fractions with new sea ice fractions
         call invoke( masked_process_ssi_kernel_type(fld,fld_ptr2,fld_ptr1,lat, &

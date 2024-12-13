@@ -18,7 +18,7 @@ module update_energy_correction_alg_mod
                                            LOG_LEVEL_DEBUG,   &
                                            LOG_LEVEL_INFO
   use mesh_mod,                      only: mesh_type
-  use physical_op_constants_mod,     only: get_da_msl_proj
+  use sci_geometric_constants_mod,   only: get_da_msl_proj
   use planet_config_mod,             only: cv
 
   implicit none

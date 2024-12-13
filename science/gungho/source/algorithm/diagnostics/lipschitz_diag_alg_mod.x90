@@ -19,13 +19,13 @@ module lipschitz_diag_alg_mod
   use r_tran_operator_mod,             only: r_tran_operator_type
 
   use finite_element_config_mod,       only: element_order
-  use geometric_constants_mod,         only: get_face_selector_ew, &
+  use sci_geometric_constants_mod,     only: get_face_selector_ew, &
                                              get_face_selector_ns
   use log_mod,                         only: LOG_LEVEL_INFO, log_event
-  use fem_constants_mod,               only: get_directional_im3_div_r_tran, &
-                                             get_detj_at_w3_r_tran
   use fs_continuity_mod,               only: W3, W2V, W2H
   use function_space_collection_mod,   only: function_space_collection
+  use transport_constants_mod,         only: get_directional_im3_div_r_tran, &
+                                             get_detj_at_w3_r_tran
 
   use dg_matrix_vector_kernel_mod,     only: dg_matrix_vector_kernel_type
   use fv_divergence_x_kernel_mod,      only: fv_divergence_x_kernel_type

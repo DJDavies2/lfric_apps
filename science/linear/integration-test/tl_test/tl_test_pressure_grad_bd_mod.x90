@@ -14,7 +14,7 @@ module tl_test_pressure_grad_bd_mod
   use sci_assign_field_random_kernel_mod, &
                                       only: assign_field_random_kernel_type
   use constants_mod,                  only: i_def, r_def, str_def
-  use fem_constants_mod,              only: get_qr
+  use sci_fem_constants_mod,          only: get_qr
   use field_array_mod,                only: field_array_type
   use sci_field_bundle_builtins_mod,  only: clone_bundle
   use field_mod,                      only: field_type

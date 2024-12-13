@@ -7,7 +7,7 @@
      use constants_mod, only : i_def, r_def
      use setop_random_kernel_mod, only : setop_random_kernel_type
      use log_mod, only : log_event, log_level_error, log_level_info, log_scratch_space
-+    use geometric_constants_mod,           only: get_face_selector_ew, &
++    use sci_geometric_constants_mod,       only: get_face_selector_ew, &
 +                                                 get_face_selector_ns
 +    use integer_field_mod,                 only: integer_field_type
      real(kind=r_def), parameter :: overall_tolerance = 1500.0_r_def

@@ -29,7 +29,8 @@ module skeb_main_alg_mod
     ! configs
     use um_domain_init_mod,            only: level2km, model_wavenumber_max
     use planet_constants_mod,          only: g
-    use geometric_constants_mod,       only: get_da_at_w2, get_panel_id, get_height
+    use sci_geometric_constants_mod,   only: get_da_at_w2, get_panel_id, &
+                                             get_height
     use sci_set_any_dof_kernel_mod,    only: set_any_dof_kernel_type
     use reference_element_mod,         only: T
 
@@ -142,19 +143,20 @@ module skeb_main_alg_mod
   use scale_by_lat_kernel_mod, only: scale_by_lat_kernel_type
 
   ! Geometric operators to get latitude in W2
-  use geometric_constants_mod, only: get_latitude_w2
+  use sci_geometric_constants_mod, only: get_latitude
 
   ! operators to derive rotational and divergent components
   ! from psif_hat
-  use fem_constants_mod,             only: get_div,            &
+  use sci_fem_constants_mod,         only: get_div,            &
                                            get_rmultiplicity
-  use physical_op_constants_mod,     only: get_project_r_dot_to_w1
+  use sci_mapping_constants_mod,     only: get_project_r_dot_to_w1
 
   ! Get the verical grid spacing for W3 fields
-  use physical_op_constants_mod,     only: get_rdz_w3, get_dx_at_w2
+  use sci_geometric_constants_mod,   only: get_dx_at_w2
+  use physics_constants_mod,         only: get_rdz_w3
 
   ! algorithms to derive the rotational and divergent wind increments
-  use mass_matrix_solver_alg_mod,    only: mass_matrix_solver_alg
+  use sci_mass_matrix_solver_alg_mod,     only: mass_matrix_solver_alg
 
   ! Kernels to derive the rotational and divergent wind increments
   use matrix_vector_kernel_mod,           only: matrix_vector_kernel_type
@@ -572,7 +574,7 @@ module skeb_main_alg_mod
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   mesh_2d => mesh_collection%get_mesh( mesh, TWOD )
-  latitude  => get_latitude_w2(mesh_2d%get_id())
+  latitude  => get_latitude(W2, mesh_2d%get_id())
 
   if (skeb_div_du == skeb_div_du_fe) then
 

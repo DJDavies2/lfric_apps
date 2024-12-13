@@ -5,17 +5,18 @@
 module tl_rhs_alg_mod
 
   use constants_mod,                       only: r_def, i_def, l_def
+  use model_clock_mod,                     only: model_clock_type
   use log_mod,                             only: log_event, &
                                                  LOG_LEVEL_ERROR
   use sci_enforce_bc_kernel_mod,           only: enforce_bc_kernel_type
-  use geometric_constants_mod,             only: get_coordinates,     &
+  use sci_geometric_constants_mod,         only: get_coordinates,    &
                                                  get_panel_id
-  use fem_constants_mod,                   only: get_mass_matrix,         &
-                                                 get_w2_mass_matrix,      &
-                                                 w2_damping_layer_matrix, &
-                                                 get_inverse_w3_mass_matrix
-  use physical_op_constants_mod,           only: get_coriolis,     &
-                                                 get_geopotential
+  use sci_fem_constants_mod,               only: get_mass_matrix,    &
+                                                 get_inverse_mass_matrix
+  use dycore_constants_mod,                only: get_coriolis,       &
+                                                 get_geopotential,   &
+                                                 get_w2_mass_matrix, &
+                                                 w2_damping_layer_matrix
   use field_mod,                           only: field_type
   use finite_element_config_mod,           only: element_order, &
                                                  vorticity_in_w1
@@ -48,7 +49,7 @@ module tl_rhs_alg_mod
   use mesh_mod,                            only: mesh_type
   use tl_vorticity_advection_kernel_mod,   only: tl_vorticity_advection_kernel_type
   use compute_vorticity_alg_mod,           only: compute_vorticity_alg
-  use fs_continuity_mod,                   only: W1, W2, Wtheta
+  use fs_continuity_mod,                   only: W1, W2, W3, Wtheta
   use function_space_collection_mod,       only: function_space_collection
 
   implicit none
@@ -80,10 +81,10 @@ contains
   !> @param[in]     compute_eos Flag to control computation of the equation of
   !!                state
   !> @param[in]     dlayer_rhs Use damping layer in rhs yes/no
-  !> @param[in]     dt The model timestep length
+  !> @param[in]     model_clock Time in the model
 subroutine tl_rhs_alg(rhs, alpha_dt, base_state, state, moist_dyn,        &
                       ls_state, ls_moist_dyn, compute_eos,                &
-                      dlayer_rhs, dt)
+                      dlayer_rhs, model_clock)
 
     implicit none
 
@@ -98,7 +99,7 @@ subroutine tl_rhs_alg(rhs, alpha_dt, base_state, state, moist_dyn,        &
     type(field_type),             intent(in)    :: ls_moist_dyn(num_moist_factors)
     type(field_type),             intent(inout) :: rhs(bundle_size)
     logical(kind=l_def),          intent(in)    :: compute_eos
-    real(kind=r_def),             intent(in)    :: dt
+    class(model_clock_type),      intent(in)    :: model_clock
 
     type(operator_type), pointer :: mm_vel     => null(), &
                                     mm_wtheta  => null(), &
@@ -142,11 +143,11 @@ subroutine tl_rhs_alg(rhs, alpha_dt, base_state, state, moist_dyn,        &
     mm_wtheta    => get_mass_matrix(Wtheta, mesh%get_id())
     chi          => get_coordinates(mesh%get_id())
     panel_id     => get_panel_id(mesh%get_id())
-    mm_w3_inv    => get_inverse_w3_mass_matrix(mesh%get_id())
+    mm_w3_inv    => get_inverse_mass_matrix(W3, mesh%get_id())
 
     ! Using modified velocity mass matrix if using damping layer
     if (dlayer_rhs) then
-      mm_vel => get_w2_mass_matrix(w2_damping_layer_matrix, mesh%get_id())
+      mm_vel => get_w2_mass_matrix(w2_damping_layer_matrix, mesh%get_id(), model_clock)
     else
       mm_vel => get_mass_matrix(W2, mesh%get_id())
     end if

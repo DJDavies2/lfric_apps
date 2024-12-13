@@ -195,26 +195,12 @@ contains
   subroutine transport_init( rho, theta, tracer_con, tracer_adv, constant, mr, &
                              w2_vector, w3_aerosol, wt_aerosol )
 
-    use reconstruct_w3_field_alg_mod, only: reconstruct_w3_field_alg_init
-    use wt_advective_update_alg_mod,  only: wt_advective_update_alg_init
-
     implicit none
 
     ! Prognostic fields
     type(field_type), intent(in) :: rho, theta, tracer_con, tracer_adv
     type(field_type), intent(in) :: constant, w2_vector, w3_aerosol, wt_aerosol
     type(field_type), intent(in) :: mr(nummr)
-
-    ! Internal variables
-    type(mesh_type), pointer     :: primary_mesh => null()
-    type(mesh_type), pointer     :: shifted_mesh => null()
-    type(mesh_type), pointer     :: aerosol_prime_mesh => null()
-    type(mesh_type), pointer     :: aerosol_shifted_mesh => null()
-
-    primary_mesh => rho%get_mesh()
-    shifted_mesh => mesh_collection%get_mesh(primary_mesh, SHIFTED)
-    aerosol_prime_mesh => w3_aerosol%get_mesh()
-    aerosol_shifted_mesh => mesh_collection%get_mesh(aerosol_prime_mesh, SHIFTED)
 
     ! Store initial values for computing errors
     call rho%copy_field_properties(rho0)
@@ -236,18 +222,6 @@ contains
                  setval_X(w2_vector0, w2_vector),   &
                  setval_X(w3_aerosol0, w3_aerosol), &
                  setval_X(wt_aerosol0, wt_aerosol) )
-
-    ! Initialise any necessary transport fields or coefficients
-    call reconstruct_w3_field_alg_init(primary_mesh)
-    call wt_advective_update_alg_init(primary_mesh)
-    call reconstruct_w3_field_alg_init(shifted_mesh)
-    if (primary_mesh%get_id() /= aerosol_prime_mesh%get_id()) then
-      call reconstruct_w3_field_alg_init(aerosol_prime_mesh)
-      call wt_advective_update_alg_init(aerosol_prime_mesh)
-      call reconstruct_w3_field_alg_init(aerosol_shifted_mesh)
-    end if
-
-    nullify(primary_mesh, shifted_mesh, aerosol_prime_mesh, aerosol_shifted_mesh)
 
   end subroutine transport_init
 
@@ -284,7 +258,7 @@ contains
     use intermesh_mappings_alg_mod,       only: map_w2_intermesh
     use model_clock_mod,                  only: model_clock_type
     use moist_mr_transport_alg_mod,       only: moist_mr_transport_alg
-    use mass_matrix_solver_alg_mod,       only: mass_matrix_solver_alg
+    use sci_mass_matrix_solver_alg_mod,   only: mass_matrix_solver_alg
     use theta_transport_alg_mod,          only: theta_transport_alg
     use transport_enumerated_types_mod,   only: equation_form_conservative
     use transport_field_mod,              only: transport_field
@@ -486,8 +460,6 @@ contains
                               constant, mr, w2_vector, w3_aerosol, wt_aerosol )
 
     use transport_stats_mod,          only: write_transport_stats
-    use reconstruct_w3_field_alg_mod, only: reconstruct_w3_field_alg_final
-    use wt_advective_update_alg_mod,  only: wt_advective_update_alg_final
 
     implicit none
 
@@ -525,9 +497,6 @@ contains
       field_name = 'wt_aerosol'
       call write_transport_stats(wt_aerosol, wt_aerosol0, field_name)
     end if
-
-    call reconstruct_w3_field_alg_final()
-    call wt_advective_update_alg_final()
 
   end subroutine transport_final
 

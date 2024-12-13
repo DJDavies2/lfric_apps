@@ -38,8 +38,8 @@ contains
                                    unfrozen_soil_moisture, soil_moist_sat,   &
                                    soil_moist_wilt, tile_fraction)
 
-    use physical_op_constants_mod,  only: get_da_msl_proj
-    use nlsizes_namelist_mod, only: sm_levels
+    use sci_geometric_constants_mod, only: get_da_msl_proj
+    use nlsizes_namelist_mod,        only: sm_levels
     use timestep_mod, only: timestep
     use log_mod,                     only: log_event,                          &
                                            log_scratch_space,                  &

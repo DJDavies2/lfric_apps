@@ -1,11 +1,11 @@
 # Files should only ever be removed or renamed in this file, never added
 #
 apps/science/gungho/source/algorithm/limited_area/limited_area_masks_alg_mod.x90
-apps/science/gungho/source/algorithm/runtime_constants/fem_constants_mod.x90
-apps/science/gungho/source/algorithm/runtime_constants/geometric_constants_mod.x90
-apps/science/gungho/source/algorithm/runtime_constants/intermesh_constants_mod.x90
+apps/science/gungho/source/algorithm/runtime_constants/dycore_constants_mod.x90
 apps/science/gungho/source/algorithm/runtime_constants/limited_area_constants_mod.x90
-apps/science/gungho/source/algorithm/runtime_constants/physical_op_constants_mod.X90
+apps/science/gungho/source/algorithm/runtime_constants/physics_constants_mod.X90
+apps/science/gungho/source/algorithm/runtime_constants/solver_constants_mod.x90
+apps/science/gungho/source/algorithm/runtime_constants/transport_constants_mod.x90
 apps/science/gungho/source/algorithm/runtime_constants/runtime_tools_mod.f90
 apps/science/gungho/source/algorithm/diagnostics/si_diagnostics_mod.x90
 apps/science/gungho/source/algorithm/solver/semi_implicit_solver_alg_mod.x90

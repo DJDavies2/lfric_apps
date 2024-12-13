@@ -11,26 +11,23 @@ module tl_wind_transport_alg_mod
   use sci_dg_convert_hdiv_field_kernel_mod, &
                                       only: dg_convert_hdiv_field_kernel_type
   use sci_enforce_bc_kernel_mod,      only: enforce_bc_kernel_type
-  use fem_constants_mod,              only: get_project_xdot_to_w2,  &
-                                            get_project_ydot_to_w2,  &
-                                            get_project_zdot_to_w2,  &
-                                            get_project_xdot_to_w2b, &
-                                            get_project_ydot_to_w2b, &
-                                            get_project_zdot_to_w2b, &
-                                            get_mass_matrix,         &
+  use sci_fem_constants_mod,          only: get_mass_matrix,         &
                                             get_rmultiplicity,       &
-                                            get_inverse_w2b_mass_matrix
+                                            get_inverse_mass_matrix
   use field_mod,                      only: field_type
   use finite_element_config_mod,      only: element_order
   use formulation_config_mod,         only: si_momentum_equation
   use fs_continuity_mod,              only: W2, W3, W2broken
   use function_space_mod,             only: function_space_type
   use function_space_collection_mod,  only: function_space_collection
-  use geometric_constants_mod,        only: get_coordinates, get_panel_id
+  use sci_geometric_constants_mod,    only: get_coordinates, get_panel_id
   use io_config_mod,                  only: subroutine_timers
   use log_mod,                        only: log_event, &
                                             LOG_LEVEL_ERROR, &
                                             LOG_LEVEL_INFO
+  use sci_mapping_constants_mod,      only: get_project_xdot_to_w2,  &
+                                            get_project_ydot_to_w2,  &
+                                            get_project_zdot_to_w2
   use mesh_mod,                       only: mesh_type
   use operator_mod,                   only: operator_type
   use timer_mod,                      only: timer
@@ -125,18 +122,11 @@ contains
         chi => get_coordinates(mesh%get_id())
         panel_id => get_panel_id(mesh%get_id())
         mm_w2 => get_mass_matrix(W2, mesh%get_id())
-        mm_w2b_inv => get_inverse_w2b_mass_matrix(mesh%get_id())
+        mm_w2b_inv => get_inverse_mass_matrix(W2broken, mesh%get_id())
         rmultiplicity_w2 => get_rmultiplicity(W2, mesh%get_id())
-
-        if (broken_w2_projection) then
-          project_xdot_to_w2 => get_project_xdot_to_w2b(mesh%get_id())
-          project_ydot_to_w2 => get_project_ydot_to_w2b(mesh%get_id())
-          project_zdot_to_w2 => get_project_zdot_to_w2b(mesh%get_id())
-        else
-          project_xdot_to_w2 => get_project_xdot_to_w2(mesh%get_id())
-          project_ydot_to_w2 => get_project_ydot_to_w2(mesh%get_id())
-          project_zdot_to_w2 => get_project_zdot_to_w2(mesh%get_id())
-        end if
+        project_xdot_to_w2 => get_project_xdot_to_w2(mesh%get_id())
+        project_ydot_to_w2 => get_project_ydot_to_w2(mesh%get_id())
+        project_zdot_to_w2 => get_project_zdot_to_w2(mesh%get_id())
 
         ! -------------------------------------------------------------------- !
         ! Split wind into components in W3

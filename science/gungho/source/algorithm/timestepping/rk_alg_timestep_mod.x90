@@ -11,7 +11,7 @@
 module rk_alg_timestep_mod
 
   use constants_mod,                      only: i_def, r_def, l_def
-  use fs_continuity_mod,                  only: W1, W2
+  use fs_continuity_mod,                  only: W1, W2, W3
   use log_mod,                            only: log_event,         &
                                                 log_scratch_space, &
                                                 LOG_LEVEL_INFO,    &
@@ -28,10 +28,11 @@ module rk_alg_timestep_mod
   use runge_kutta_init_mod,               only: get_rk_timestepping_weights
   use timestepping_config_mod,            only: runge_kutta_method
   use derived_config_mod,                 only: bundle_size
-  use fem_constants_mod,                  only: get_qr, &
-                                                get_inverse_w3_mass_matrix
-  use geometric_constants_mod,            only: get_coordinates, &
-                                                get_panel_id
+  use sci_fem_constants_mod,              only: get_qr, &
+                                                get_inverse_mass_matrix
+  use sci_geometric_constants_mod,        only: get_coordinates, &
+                                                get_panel_id,    &
+                                                get_dx_at_w2
   use transport_config_mod,               only: operators, &
                                                 operators_fv
   use mixing_config_mod,                  only: viscosity, viscosity_mu
@@ -43,8 +44,8 @@ module rk_alg_timestep_mod
                                                 add_bundle,   &
                                                 copy_bundle,  &
                                                 set_bundle_scalar
-  use physical_op_constants_mod,          only: get_geopotential,  &
-                                                get_coriolis, get_dx_at_w2
+  use dycore_constants_mod,               only: get_geopotential,  &
+                                                get_coriolis
 
   ! PsyKAl PSYClone kernels
   use sci_enforce_bc_kernel_mod,          only: enforce_bc_kernel_type
@@ -72,7 +73,7 @@ module rk_alg_timestep_mod
   use reference_element_mod,              only: reference_element_type
   use mesh_mod,                           only: mesh_type
   ! Algorithm
-  use mass_matrix_solver_alg_mod,         only: mass_matrix_solver_alg
+  use sci_mass_matrix_solver_alg_mod,     only: mass_matrix_solver_alg
   use gungho_transport_control_alg_mod,   only: gungho_transport_control_alg_init, &
                                                 gungho_transport_control_alg,      &
                                                 gungho_transport_control_alg_final
@@ -415,7 +416,7 @@ contains
       call bundle_axpy( real(model_clock%get_seconds_per_step(), r_def), &
                         self%inc, self%state_n, self%state, bundle_size)
       ! Recompute exner from eos
-      m3_inv => get_inverse_w3_mass_matrix(mesh_id)
+      m3_inv => get_inverse_mass_matrix(W3, mesh_id)
       call invoke( project_eos_pressure_kernel_type( self%state(igh_p), self%state(igh_d),  &
                                                      self%state(igh_t), moist_dyn(gas_law), &
                                                      chi, panel_id, m3_inv, qr ) )

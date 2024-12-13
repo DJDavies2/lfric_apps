@@ -14,7 +14,7 @@ module intermesh_mappings_alg_mod
   use sci_enforce_lower_bound_kernel_mod, &
                                       only : enforce_lower_bound_kernel_type
   use extrusion_mod,                  only : SHIFTED, TWOD
-  use geometric_constants_mod,        only : get_face_selector_ew, &
+  use sci_geometric_constants_mod,    only : get_face_selector_ew, &
                                              get_face_selector_ns
   use field_collection_mod,           only : field_collection_type
   use finite_element_config_mod,      only : element_order
@@ -72,7 +72,7 @@ contains
 
     use extrusion_mod,                    only: SHIFTED
     use sci_apply_w3_to_sh_w3_kernel_mod, only: apply_w3_to_sh_w3_kernel_type
-    use fem_constants_mod,                only: get_detj_at_w3_r_def
+    use sci_geometric_constants_mod,      only: get_detj_at_w3
 
     implicit none
 
@@ -88,8 +88,8 @@ contains
     ! Obtain shifted densities
     prime_extrusion_mesh => primary_rho%get_mesh()
     shifted_mesh => mesh_collection%get_mesh(prime_extrusion_mesh, SHIFTED)
-    detj_primary => get_detj_at_w3_r_def(prime_extrusion_mesh%get_id())
-    detj_shifted => get_detj_at_w3_r_def(shifted_mesh%get_id())
+    detj_primary => get_detj_at_w3(prime_extrusion_mesh%get_id())
+    detj_shifted => get_detj_at_w3(shifted_mesh%get_id())
 
     sh_w3_fs => function_space_collection%get_fs(shifted_mesh, element_order, W3)
 
@@ -373,7 +373,7 @@ contains
 
     use sci_restrict_scalar_weighted_kernel_mod, &
                                      only: restrict_scalar_weighted_kernel_type
-    use intermesh_constants_mod,     only: get_intermesh_weights_w3_rdef
+    use sci_mapping_constants_mod,   only: get_intermesh_weights_w3_rdef
 
     implicit none
 
@@ -396,7 +396,7 @@ contains
 
     use sci_prolong_scalar_weighted_kernel_mod, &
                                       only: prolong_scalar_weighted_kernel_type
-    use intermesh_constants_mod,      only: get_intermesh_weights_w3_rdef
+    use sci_mapping_constants_mod,    only: get_intermesh_weights_w3_rdef
 
     implicit none
 
@@ -505,7 +505,7 @@ contains
 
     use sci_prolong_w2_kernel_mod,      only: prolong_w2_kernel_type
     use sci_restrict_w2_kernel_mod,     only: restrict_w2_kernel_type
-    use intermesh_constants_mod,        only: get_intermesh_weights_w2
+    use sci_mapping_constants_mod,      only: get_intermesh_weights_w2
 
     implicit none
 

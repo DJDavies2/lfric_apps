@@ -45,7 +45,7 @@ module mixed_operator_alg_mod
 
   use combine_w2_field_kernel_mod, only: combine_w2_field_kernel_type
   use constants_mod,               only: r_solver, i_def, l_def
-  use geometric_constants_mod,     only: get_face_selector_ew, &
+  use sci_geometric_constants_mod, only: get_face_selector_ew, &
                                          get_face_selector_ns
   use integer_field_mod,           only: integer_field_type
   use log_mod,                     only: log_event, LOG_LEVEL_ERROR, &
@@ -62,6 +62,7 @@ module mixed_operator_alg_mod
   use split_w2_field_kernel_mod,   only: split_w2_field_kernel_type
   use vector_mod,                  only: abstract_vector_type
   use formulation_config_mod,      only: p2theta_vert
+  use model_clock_mod,             only: model_clock_type
 
   implicit none
 
@@ -108,8 +109,8 @@ contains
                                                   get_p3theta,        &
                                                   get_eliminated_q22, &
                                                   get_eliminated_q32
-    use fem_constants_mod,                  only: get_w2_mass_matrix_r_solver,         &
-                                                  w2_si_matrix,                        &
+    use dycore_constants_mod,               only: w2_si_matrix
+    use solver_constants_mod,               only: get_w2_mass_matrix_r_solver, &
                                                   get_normalisation_r_solver
     use limited_area_constants_mod,         only: get_mask_r_solver
     use sci_enforce_bc_kernel_mod,          only: enforce_bc_kernel_type

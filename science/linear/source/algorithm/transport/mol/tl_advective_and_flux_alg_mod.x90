@@ -29,7 +29,7 @@ module tl_advective_and_flux_alg_mod
   use tl_horizontal_mass_flux_kernel_mod, only: tl_horizontal_mass_flux_kernel_type
   use tl_vertical_mass_flux_kernel_mod,   only: tl_vertical_mass_flux_kernel_type
   use mesh_mod,                           only: mesh_type
-  use fem_constants_mod,                  only: get_inverse_w3_mass_matrix
+  use sci_fem_constants_mod,              only: get_inverse_mass_matrix
   use function_space_collection_mod,      only: function_space_collection
   use function_space_mod,                 only: function_space_type
   use fs_continuity_mod,                  only: W3, Wtheta
@@ -166,7 +166,7 @@ contains
           call adv_inc_1%initialise( density%get_function_space() )
           call adv_inc_2%initialise( density%get_function_space() )
 
-          m3_inv => get_inverse_w3_mass_matrix( density%get_mesh_id() )
+          m3_inv => get_inverse_mass_matrix( W3, density%get_mesh_id() )
           call invoke( setval_c( adv_inc_1, 0.0_r_def ), &
                        setval_c( adv_inc_2, 0.0_r_def )  )
           ! Different advective update kernel dependent on direction

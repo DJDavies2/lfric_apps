@@ -8,6 +8,7 @@
 module tl_rk_alg_timestep_mod
 
   use constants_mod,                      only: i_def,r_def
+  use fs_continuity_mod,                  only: W3
   use log_mod,                            only: log_event,         &
                                                 log_scratch_space, &
                                                 LOG_LEVEL_INFO,    &
@@ -21,10 +22,11 @@ module tl_rk_alg_timestep_mod
   use runge_kutta_init_mod,               only: get_rk_timestepping_weights
   use timestepping_config_mod,            only: runge_kutta_method
   use derived_config_mod,                 only: bundle_size
-  use fem_constants_mod,                  only: get_qr, &
-                                                get_inverse_w3_mass_matrix
-  use geometric_constants_mod,            only: get_coordinates, &
-                                                get_panel_id
+  use sci_fem_constants_mod,              only: get_qr, &
+                                                get_inverse_mass_matrix
+  use sci_geometric_constants_mod,        only: get_coordinates, &
+                                                get_panel_id,    &
+                                                get_dx_at_w2
   use transport_config_mod,               only: operators, &
                                                 operators_fv
   use mixing_config_mod,                  only: viscosity, viscosity_mu
@@ -36,8 +38,8 @@ module tl_rk_alg_timestep_mod
                                                 add_bundle,   &
                                                 copy_bundle,  &
                                                 set_bundle_scalar
-  use physical_op_constants_mod,          only: get_geopotential,  &
-                                                get_coriolis, get_dx_at_w2
+  use dycore_constants_mod,               only: get_geopotential,  &
+                                                get_coriolis
 
   ! PsyKAl PSYClone kernels
   use sci_enforce_bc_kernel_mod,          only: enforce_bc_kernel_type
@@ -69,7 +71,7 @@ module tl_rk_alg_timestep_mod
   use reference_element_mod,              only: reference_element_type
   use mesh_mod,                           only: mesh_type
   ! Algorithm
-  use mass_matrix_solver_alg_mod,         only: mass_matrix_solver_alg
+  use sci_mass_matrix_solver_alg_mod,     only: mass_matrix_solver_alg
   use gungho_transport_control_alg_mod,   only: gungho_transport_control_alg, &
                                                 gungho_transport_control_alg_init
   use compute_vorticity_alg_mod,          only: compute_vorticity_alg
@@ -365,7 +367,7 @@ contains
       call invoke( setval_c(inc(igh_p), 0.0_r_def) )
       call bundle_axpy(cast_dt, inc, ls_state_n, ls_state_stage(:,stage + 1), bundle_size)
       ! Recompute exner from eos
-      m3_inv => get_inverse_w3_mass_matrix(mesh_id)
+      m3_inv => get_inverse_mass_matrix(W3, mesh_id)
       call invoke( project_eos_pressure_kernel_type( ls_state_stage(igh_p,stage+1), &
                                                      ls_state_stage(igh_d,stage+1), &
                                                      ls_state_stage(igh_t,stage+1), &
@@ -463,7 +465,7 @@ contains
       call bundle_axpy(cast_dt, inc, state_n, state, bundle_size)
 
      ! Recompute exner from eos
-      m3_inv => get_inverse_w3_mass_matrix(mesh_id)
+      m3_inv => get_inverse_mass_matrix(W3, mesh_id)
       call invoke( tl_project_eos_pressure_kernel_type(              &
                           state(igh_p), state(igh_d), state(igh_t),  &
                           moist_dyn(gas_law),                        &

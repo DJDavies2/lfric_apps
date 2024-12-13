@@ -10,18 +10,17 @@ module ffsl_vert_alg_mod
 
   ! Constants and types
   use constants_mod,                    only: r_tran, i_def, l_def
-  use fem_constants_mod,                only: get_inverse_w3_mass_matrix, &
-                                              get_detj_at_w3_r_tran
   use field_mod,                        only: field_type
   use fs_continuity_mod,                only: W2V
   use function_space_mod,               only: function_space_type
   use function_space_collection_mod,    only: function_space_collection
-  use geometric_constants_mod,          only: get_dz_w3
+  use sci_geometric_constants_mod,      only: get_dz_w3
   use log_mod,                          only: log_event, LOG_LEVEL_ERROR
   use mesh_mod,                         only: mesh_type
   use r_tran_field_mod,                 only: r_tran_field_type
   use timer_mod,                        only: timer
   use copy_field_alg_mod,               only: copy_field
+  use transport_constants_mod,          only: get_detj_at_w3_r_tran
   use transport_enumerated_types_mod,   only: equation_form_advective,    &
                                               equation_form_conservative, &
                                               equation_form_consistent,   &

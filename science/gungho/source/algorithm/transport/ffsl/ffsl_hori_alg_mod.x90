@@ -15,13 +15,11 @@ module ffsl_hori_alg_mod
   use boundaries_config_mod,            only: limited_area, transport_boundary_depth
   use check_configuration_mod,          only: check_any_eqn_consistent
   use constants_mod,                    only: r_tran, i_def, l_def
-  use fem_constants_mod,                only: get_inverse_w3_mass_matrix, &
-                                              get_detj_at_w3_r_tran
   use field_mod,                        only: field_type
   use fs_continuity_mod,                only: W2H, W2Hbroken
   use function_space_mod,               only: function_space_type
   use function_space_collection_mod,    only: function_space_collection
-  use geometric_constants_mod,          only: get_panel_id,         &
+  use sci_geometric_constants_mod,      only: get_panel_id,         &
                                               get_face_selector_ew, &
                                               get_face_selector_ns
   use integer_field_mod,                only: integer_field_type
@@ -29,6 +27,7 @@ module ffsl_hori_alg_mod
   use mesh_mod,                         only: mesh_type
   use r_tran_field_mod,                 only: r_tran_field_type
   use timer_mod,                        only: timer
+  use transport_constants_mod,          only: get_detj_at_w3_r_tran
   use transport_enumerated_types_mod,   only: equation_form_advective,         &
                                               equation_form_conservative,      &
                                               equation_form_consistent,        &
@@ -46,6 +45,9 @@ module ffsl_hori_alg_mod
   use ffsl_advective_updates_alg_mod,   only: swift_outer_update_tracer, &
                                               swift_inner_update_tracer, &
                                               ffsl_advective_increment
+
+  ! Other algorithms
+  use remap_on_extended_mesh_alg_mod,   only: remap_on_extended_mesh
 
   ! Kernels
   use sci_average_w2_to_w2b_kernel_mod, only: average_w2_to_w2b_kernel_type
@@ -347,11 +349,10 @@ contains
     if ( extended_mesh ) then
       monotone_remap = ( monotone /= horizontal_monotone_none )
       remap_depth = cfl_stencil_xy
-      call transport_runtime%remap_on_extended_mesh(                  &
-                          field_big_halo, field_n, monotone_remap,    &
-                          transport_metadata%get_enforce_min_value(), &
-                          transport_metadata%get_min_value(),         &
-                          remap_depth)
+      call remap_on_extended_mesh(field_big_halo, field_n, monotone_remap,     &
+                                  transport_metadata%get_enforce_min_value(),  &
+                                  transport_metadata%get_min_value(),          &
+                                  remap_depth)
     else
       call field_big_halo%initialise( field_n%get_function_space(), &
                                       halo_depth = get_required_stencil_depth() )
@@ -627,16 +628,14 @@ contains
     if ( extended_mesh ) then
       monotone_remap = ( monotone /= horizontal_monotone_none )
       remap_depth = cfl_stencil_xy
-      call transport_runtime%remap_on_extended_mesh(                  &
-                          remap_field_x, field_x, monotone_remap,     &
-                          transport_metadata%get_enforce_min_value(), &
-                          transport_metadata%get_min_value(),         &
-                          remap_depth)
-      call transport_runtime%remap_on_extended_mesh(                  &
-                          remap_field_y, field_y, monotone_remap,     &
-                          transport_metadata%get_enforce_min_value(), &
-                          transport_metadata%get_min_value(),         &
-                          remap_depth)
+      call remap_on_extended_mesh(remap_field_x, field_x, monotone_remap,      &
+                                  transport_metadata%get_enforce_min_value(),  &
+                                  transport_metadata%get_min_value(),          &
+                                  remap_depth)
+      call remap_on_extended_mesh(remap_field_y, field_y, monotone_remap,      &
+                                  transport_metadata%get_enforce_min_value(),  &
+                                  transport_metadata%get_min_value(),          &
+                                  remap_depth)
     else
       call remap_field_x%initialise( field_x%get_function_space(), &
                                      halo_depth = get_required_stencil_depth() )
@@ -1038,11 +1037,10 @@ contains
     if ( extended_mesh ) then
       monotone_remap = ( monotone /= horizontal_monotone_none )
       remap_depth = cfl_stencil_xy
-      call transport_runtime%remap_on_extended_mesh(                  &
-                          field_big_halo, field_n, monotone_remap,    &
-                          transport_metadata%get_enforce_min_value(), &
-                          transport_metadata%get_min_value(),         &
-                          remap_depth)
+      call remap_on_extended_mesh(field_big_halo, field_n, monotone_remap,     &
+                                  transport_metadata%get_enforce_min_value(),  &
+                                  transport_metadata%get_min_value(),          &
+                                  remap_depth)
     else
       call field_big_halo%initialise( field_n%get_function_space(), &
                                       halo_depth = get_required_stencil_depth() )

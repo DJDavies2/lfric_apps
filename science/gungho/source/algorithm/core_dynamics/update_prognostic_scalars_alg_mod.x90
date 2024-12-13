@@ -30,13 +30,15 @@ contains
     use formulation_config_mod,       only: eos_method,         &
                                             eos_method_sampled, &
                                             eos_method_projected
+    use fs_continuity_mod,            only: W3
     use quadrature_xyoz_mod,          only: quadrature_xyoz_type
     use operator_mod,                 only: operator_type
-    use fem_constants_mod,            only: get_qr, &
-                                            get_inverse_w3_mass_matrix
-    use geometric_constants_mod,      only: get_coordinates, &
+    use sci_fem_constants_mod,        only: get_qr, &
+                                            get_inverse_mass_matrix
+    use sci_geometric_constants_mod,  only: get_coordinates, &
                                             get_panel_id
-    use mass_matrix_solver_alg_mod,   only: mass_matrix_solver_alg
+    use sci_mass_matrix_solver_alg_mod, &
+                                      only: mass_matrix_solver_alg
     use project_eos_pressure_kernel_mod, &
                                       only: project_eos_pressure_kernel_type
     use sample_eos_pressure_kernel_mod,  &
@@ -64,7 +66,7 @@ contains
 
     call dtheta%initialise( state(igh_t)%get_function_space() )
 
-    m3_inv  => get_inverse_w3_mass_matrix(mesh%get_id())
+    m3_inv  => get_inverse_mass_matrix(W3, mesh%get_id())
     chi => get_coordinates(mesh%get_id())
     panel_id => get_panel_id(mesh%get_id())
     qr => get_qr()
@@ -84,7 +86,7 @@ contains
                                                        state(igh_t), moist_dyn_gas_law) )
 
       case(eos_method_projected)
-        m3_inv  => get_inverse_w3_mass_matrix(mesh%get_id())
+        m3_inv  => get_inverse_mass_matrix(W3, mesh%get_id())
         chi => get_coordinates(mesh%get_id())
         panel_id => get_panel_id(mesh%get_id())
         qr => get_qr()

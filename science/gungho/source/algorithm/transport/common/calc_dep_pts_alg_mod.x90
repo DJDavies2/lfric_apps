@@ -84,13 +84,13 @@ module calc_dep_pts_alg_mod
   use vert_deppt_sorting_kernel_mod,     only: vert_deppt_sorting_kernel_type
 
   ! Pointers to existing objects
-  use fem_constants_mod,                 only: get_detj_at_w2,          &
-                                               get_detj_at_w2_above,    &
+  use transport_constants_mod,           only: get_detj_at_w2_above,    &
                                                get_detj_at_w2_below,    &
                                                get_detj_at_w3_r_tran
-  use geometric_constants_mod,           only: get_height,              &
+  use sci_geometric_constants_mod,       only: get_height,              &
                                                get_face_selector_ew,    &
-                                               get_face_selector_ns
+                                               get_face_selector_ns,    &
+                                               get_detj_at_w2
 
   implicit none
 

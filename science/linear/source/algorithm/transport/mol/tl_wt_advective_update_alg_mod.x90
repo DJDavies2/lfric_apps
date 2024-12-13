@@ -21,7 +21,7 @@
 module tl_wt_advective_update_alg_mod
 
   use constants_mod,                      only: r_def, i_def, l_def
-  use fem_constants_mod,                  only: get_inverse_lumped_mass_matrix
+  use sci_fem_constants_mod,              only: get_inverse_lumped_mass_matrix
   use field_mod,                          only: field_type
   use finite_element_config_mod,          only: element_order
   use fs_continuity_mod,                  only: W1, Wtheta
@@ -42,11 +42,7 @@ module tl_wt_advective_update_alg_mod
                                                 direction_3d,                 &
                                                 vertical_monotone_koren
   use transport_metadata_mod,             only: transport_metadata_type
-  use wt_advective_update_alg_mod,        only: get_adv_ndata_v,                &
-                                                get_vert_adv_coeffs,            &
-                                                get_reversible_adv_ndata_v,     &
-                                                get_reversible_vert_adv_coeffs, &
-                                                hori_wt_update_alg
+  use wt_advective_update_alg_mod,        only: hori_wt_update_alg
   use tl_transport_runtime_collection_mod, &
                                           only: tl_transport_runtime
   use transport_runtime_alg_mod,          only: transport_runtime_type
@@ -174,7 +170,9 @@ contains
   subroutine tl_vert_wt_update_alg(u_grad_f, wind, field, ls_wind, ls_field, &
                                    transport_metadata, final_rk_stage)
 
-    use tl_poly1d_vert_adv_kernel_mod,     only: tl_poly1d_vert_adv_kernel_type
+    use tl_poly1d_vert_adv_kernel_mod,  only: tl_poly1d_vert_adv_kernel_type
+    use transport_constants_mod,        only: get_vert_wt_mol_coeffs,          &
+                                              get_reversible_vert_wt_mol_coeffs
 
     implicit none
 
@@ -186,9 +184,9 @@ contains
 
     integer(kind=i_def)          :: mesh_id
     integer(kind=i_def)          :: vertical_order
-    integer(kind=i_def), pointer :: ndata_v => null()
-    type(mesh_type),     pointer :: mesh => null()
-    type(field_type),    pointer :: vert_adv_coeffs => null()
+    integer(kind=i_def)          :: ndata_v
+    type(mesh_type),     pointer :: mesh
+    type(field_type),    pointer :: vert_adv_coeffs
     logical(kind=l_def)          :: logspace
     logical(kind=l_def)          :: reversible
     integer(kind=i_def)          :: monotonicity
@@ -200,16 +198,15 @@ contains
     mesh => wind%get_mesh()
     mesh_id = mesh%get_id()
 
-    ! vertical update
     if ( reversible ) then
-      ndata_v => get_reversible_adv_ndata_v(mesh_id)
-      vert_adv_coeffs => get_reversible_vert_adv_coeffs(mesh_id)
+      vert_adv_coeffs => get_reversible_vert_wt_mol_coeffs(mesh_id)
       vertical_order = fv_vertical_order
     else
-      ndata_v => get_adv_ndata_v(mesh_id)
-      vert_adv_coeffs => get_vert_adv_coeffs(mesh_id)
+      vert_adv_coeffs => get_vert_wt_mol_coeffs(mesh_id)
       vertical_order = fv_vertical_order + 1_i_def
     end if
+
+    ndata_v = 2_i_def*(vertical_order + 1_i_def)
 
     if ( monotonicity == vertical_monotone_koren ) then
       call log_event('T.L. Wtheta advective update not implemented with Koren scheme', LOG_LEVEL_ERROR)
@@ -225,8 +222,6 @@ contains
                                                   vertical_order,  &
                                                   logspace ) )
     end if
-
-    nullify( vert_adv_coeffs, ndata_v )
 
   end subroutine tl_vert_wt_update_alg
 

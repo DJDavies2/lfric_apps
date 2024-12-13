@@ -18,10 +18,8 @@ module end_of_transport_step_alg_mod
   use sci_enforce_lower_bound_kernel_mod, &
                                       only: enforce_lower_bound_kernel_type
   use extrusion_mod,                  only: SHIFTED
-  use fem_constants_mod,              only: get_directional_im3_div_r_tran, &
-                                            get_directional_im3_div,        &
-                                            get_rmultiplicity,              &
-                                            get_detj_at_w3_r_tran
+  use sci_fem_constants_mod,          only: get_im3_div, &
+                                            get_rmultiplicity
   use field_mod,                      only: field_type
   use sci_field_minmax_alg_mod,       only: log_field_minmax
   use finite_element_config_mod,      only: element_order
@@ -33,7 +31,7 @@ module end_of_transport_step_alg_mod
   use fv_divergence_x_kernel_mod,     only: fv_divergence_x_kernel_type
   use fv_divergence_y_kernel_mod,     only: fv_divergence_y_kernel_type
   use fv_divergence_z_kernel_mod,     only: fv_divergence_z_kernel_type
-  use geometric_constants_mod,        only: get_height,           &
+  use sci_geometric_constants_mod,    only: get_height,           &
                                             get_face_selector_ew, &
                                             get_face_selector_ns
   use integer_field_mod,              only: integer_field_type
@@ -61,6 +59,8 @@ module end_of_transport_step_alg_mod
                                             theta_dispersion_correction, &
                                             operators,                   &
                                             operators_fem
+  use transport_constants_mod,        only: get_directional_im3_div_r_tran, &
+                                            get_detj_at_w3_r_tran
   use transport_enumerated_types_mod, only: direction_3d,   &
                                             direction_h,    &
                                             direction_v,    &
@@ -254,7 +254,7 @@ contains
 
         div => get_directional_im3_div_r_tran(mesh_id, direction_3d)
         ! TODO #3706: the flux limiter should use r_tran precision
-        div_r_def => get_directional_im3_div(mesh_id, direction_3d)
+        div_r_def => get_im3_div(mesh_id)
 
         min_value = transport_metadata%get_min_value()
         acceptable_min = real(min_val_abs_tol, r_tran)
@@ -651,8 +651,6 @@ contains
         rho_d_start => transport_runtime%get_rho_d(prime_extrusion_mesh_id, start_step_with_substep)
         rho_d_np1 => transport_runtime%get_rho_d(prime_extrusion_mesh_id, final_step_with_substep+1)
         div => get_directional_im3_div_r_tran(prime_extrusion_mesh_id, direction_3d)
-        ! TODO #3706: the flux limiter should use r_tran precision
-        div_r_def => get_directional_im3_div(prime_extrusion_mesh_id, direction_3d)
         detj_at_w3 => get_detj_at_w3_r_tran(prime_extrusion_mesh_id)
 
         call rho_X_start%initialise( w3_fs )
@@ -669,8 +667,6 @@ contains
         rho_d_start => transport_runtime%get_rho_d(shifted_mesh%get_id(), start_step_with_substep)
         rho_d_np1 => transport_runtime%get_rho_d(shifted_mesh%get_id(), final_step_with_substep+1)
         div => get_directional_im3_div_r_tran(shifted_mesh%get_id(), direction_3d)
-        ! TODO #3706: the flux limiter should use r_tran precision
-        div_r_def => get_directional_im3_div(shifted_mesh%get_id(), direction_3d)
         detj_at_w3 => get_detj_at_w3_r_tran(shifted_mesh%get_id())
 
         call mr_sh_w3_start%initialise( sh_w3_fs )
@@ -700,6 +696,14 @@ contains
       if (enforce_min_value .and. min_val_method == min_val_method_iterative &
                             .and. .not. no_mono_flag) then
         if ( subroutine_timers ) call timer('transport.iterative_min_val')
+
+        select case( mr_function_space )
+        case ( W3 )
+          ! TODO #3706: the flux limiter should use r_tran precision
+          div_r_def => get_im3_div(prime_extrusion_mesh_id)
+        case ( Wtheta )
+          div_r_def => get_im3_div(shifted_mesh%get_id())
+        end select
 
         min_value = transport_metadata%get_min_value()
         adv_dt = 1.0_r_tran  ! dt hidden inside of flux already

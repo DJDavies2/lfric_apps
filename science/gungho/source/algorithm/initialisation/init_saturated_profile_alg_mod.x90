@@ -14,7 +14,7 @@ use field_mod,                       only: field_type
 use formulation_config_mod,          only: moisture_formulation,    &
                                            moisture_formulation_dry
 use function_space_mod,              only: function_space_type
-use geometric_constants_mod,         only: get_coordinates, get_panel_id
+use sci_geometric_constants_mod,     only: get_coordinates, get_panel_id
 use idealised_config_mod,            only: test, test_bryan_fritsch
 use init_gungho_prognostics_alg_mod, only: init_exner_field, &
                                            init_rho_field,   &

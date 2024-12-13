@@ -11,7 +11,7 @@ module slow_physics_alg_mod
                                        encorr_usage_apply
   use external_forcing_config_mod, &
                                  only: pc2_force_response
-  use clock_mod,                 only: clock_type
+  use model_clock_mod,           only: model_clock_type
   use timestepping_config_mod,   only: outer_iterations
   use cloud_config_mod,          only: scheme, scheme_pc2, scheme_bimodal, &
                                        pc2ini, pc2ini_bimodal,cld_fsd_hill
@@ -218,14 +218,14 @@ contains
     type( field_collection_type ), intent(inout) :: chemistry_fields
     type( field_collection_type ), intent(inout) :: aerosol_fields
 
-    type(mesh_type), intent(in), pointer :: mesh
-    type(mesh_type), intent(in), pointer :: twod_mesh
+    type(mesh_type),  intent(in), pointer :: mesh
+    type(mesh_type),  intent(in), pointer :: twod_mesh
 
-    class(clock_type),  intent(in) :: clock
-    real( kind=r_def ), intent(in) :: dt
-    real( kind=r_def ), intent(in) :: dtemp_encorr
+    class( model_clock_type ), intent(in) :: clock
+    real( kind=r_def ),        intent(in) :: dt
+    real( kind=r_def ),        intent(in) :: dtemp_encorr
 
-    real( kind=r_def )                :: time_now
+    real( kind=r_def )                    :: time_now
 
     ! Local fields...
     ! ...for external forcing
@@ -758,7 +758,7 @@ contains
                       microphysics_fields, dmr_mphys, orography_fields,  &
                       turbulence_fields, convection_fields, cloud_fields,&
                       surface_fields, soil_fields, snow_fields,          &
-                      aerosol_fields )
+                      aerosol_fields, clock)
 
     !--------------------------------------------------------------------
     ! Calculate Leonard term fluxes and increments
@@ -773,7 +773,7 @@ contains
       call leonard_term_alg(mt_inc_leonard, thetal_inc_leonard,           &
                             u_inc_leonard, mr_n, theta, u, rho,           &
                             turbulence_fields, derived_fields,            &
-                            dt)
+                            dt, clock)
       leonard_term_done = .true. ! Collect this increment later on
 
     end if

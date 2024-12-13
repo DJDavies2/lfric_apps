@@ -11,6 +11,7 @@
 !!          https://code.metoffice.gov.uk/trac/lfric/wiki/GhaspSupport/Documentation
 module si_operators_alg_mod
   use constants_mod,             only: i_def, r_def, r_solver
+  use model_clock_mod,           only: model_clock_type
   use operator_mod,              only: operator_type, r_solver_operator_type
   use field_mod,                 only: field_type
   use function_space_mod,        only: function_space_type
@@ -350,9 +351,9 @@ contains
   !> @param[in] theta_ref     Reference Potential temperature
   !> @param[in] rho_ref       Reference Density
   !> @param[in] exner_ref     Reference Exner pressure
-  !> @param[in] dt            The model timestep length
+  !> @param[in] model_clock   Time in the model
   !> @param[in] moist_dyn_ref Bundle of reference moist dynamics factors
-  subroutine compute_si_operators(theta_ref, rho_ref, exner_ref, dt, moist_dyn_ref)
+  subroutine compute_si_operators(theta_ref, rho_ref, exner_ref, model_clock, moist_dyn_ref)
 
     use quadrature_xyoz_mod,                  only: quadrature_xyoz_type
     use quadrature_face_mod,                  only: quadrature_face_type
@@ -373,16 +374,16 @@ contains
     use sample_flux_kernel_mod,               only: sample_flux_kernel_type
     use finite_element_config_mod,            only: nqp_exact
     use fs_continuity_mod,                    only: W2
-    use geometric_constants_mod,              only: get_coordinates, &
+    use sci_geometric_constants_mod,          only: get_coordinates, &
                                                     get_panel_id, &
                                                     get_height
-    use fem_constants_mod,                    only: get_normalisation_r_solver, &
-                                                    get_rmultiplicity, &
-                                                    get_im3_div_r_solver, &
-                                                    get_w2_mass_matrix, &
-                                                    w2_lagged_damping_layer_matrix, &
-                                                    get_detj_at_w3_r_solver, &
-                                                    get_inverse_w3_mass_matrix_r_solver
+    use sci_fem_constants_mod,                only: get_rmultiplicity
+    use dycore_constants_mod,                 only: get_w2_mass_matrix, &
+                                                    w2_lagged_damping_layer_matrix
+    use solver_constants_mod,                 only: get_detj_at_w3_r_solver,   &
+                                                    get_im3_div_r_solver,      &
+                                                    get_normalisation_r_solver, &
+                                                    get_inverse_mass_matrix_r_solver
     use limited_area_constants_mod,           only: get_mask
     use sci_invert_local_operator_kernel_mod, only: invert_local_operator_kernel_type
     use field_indices_mod,                    only: igh_u, igh_t, igh_d, igh_p
@@ -414,12 +415,14 @@ contains
     use sci_restrict_scalar_unweighted_kernel_mod, &
                                               only: restrict_scalar_unweighted_kernel_type
     use sci_operator_algebra_kernel_mod,      only: operator_setval_x_kernel_type
+    use model_clock_mod,                      only: model_clock_type
 
     implicit none
 
     type(field_type), intent(in)           :: theta_ref, rho_ref, exner_ref
-    real(kind=r_def), intent(in)           :: dt
     type(field_type), intent(in)           :: moist_dyn_ref(num_moist_factors)
+    class(model_clock_type), intent(in)    :: model_clock
+    real(kind=r_def)                       :: dt
     type(quadrature_xyoz_type)             :: qr
     type(quadrature_face_type)             :: qrf
     type(quadrature_rule_gaussian_type)    :: quadrature_rule
@@ -465,6 +468,8 @@ contains
 
     if ( subroutine_timers ) call timer('si_operators_alg:compute')
     call log_event( "Gungho: computing si_operators", LOG_LEVEL_DEBUG )
+
+    dt = real(model_clock%get_seconds_per_step(), r_def)
 
     mesh  => exner_ref%get_mesh()
     w3_fs => exner_ref%get_function_space()
@@ -538,7 +543,7 @@ contains
                       sample_field_kernel_type(exner_in_wth, multiplicity, exner) )
        end if
 
-       m3_inv => get_inverse_w3_mass_matrix_r_solver( mesh%get_id() )
+       m3_inv => get_inverse_mass_matrix_r_solver( W3, mesh%get_id() )
        const1 = real(tau_t*tau_u*dt**2*cp, r_solver)
        select case(eos_method)
        case(eos_method_sampled)
@@ -638,7 +643,9 @@ contains
        ! Compute Hb_lumped_inv field
        ! mass matrix should include damping layer and lagged-orography terms
        ! if these options are not true, this matrix won't contain the terms
-       m2 => get_w2_mass_matrix(w2_lagged_damping_layer_matrix, mesh%get_id() )
+       m2 => get_w2_mass_matrix(                                               &
+          w2_lagged_damping_layer_matrix, mesh%get_id(), model_clock           &
+      )
 
        call m2_r_solver%initialise( w2_fs, w2_fs )
        call invoke( operator_setval_x_kernel_type( m2_r_solver, m2 ) )

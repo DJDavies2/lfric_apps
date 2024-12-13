@@ -11,8 +11,8 @@
 module tl_test_kinetic_energy_gradient_mod
 
   use constants_mod,                  only: i_def, r_def, str_def
-  use fem_constants_mod,              only: get_qr
-  use geometric_constants_mod,        only: get_coordinates, &
+  use sci_fem_constants_mod,          only: get_qr
+  use sci_geometric_constants_mod,    only: get_coordinates, &
                                             get_panel_id
   use fs_continuity_mod,              only: W2
   use quadrature_xyoz_mod,            only: quadrature_xyoz_type

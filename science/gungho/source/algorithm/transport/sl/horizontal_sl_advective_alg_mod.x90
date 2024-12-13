@@ -37,9 +37,10 @@ module horizontal_sl_advective_alg_mod
   use horizontal_cubic_sl_kernel_mod,   only: horizontal_cubic_sl_kernel_type
   use horizontal_linear_sl_kernel_mod,  only: horizontal_linear_sl_kernel_type
   use psykal_lite_transport_mod,        only: invoke_ffsl_panel_swap_kernel_type
+  use remap_on_extended_mesh_alg_mod,   only: remap_on_extended_mesh
 
   ! Pointers to other objects
-  use geometric_constants_mod,          only: get_panel_id
+  use sci_geometric_constants_mod,      only: get_panel_id
 
   ! Configs
   use transport_config_mod,             only: extended_mesh
@@ -145,11 +146,10 @@ module horizontal_sl_advective_alg_mod
     ! If needed remap the field on an extended cubed sphere
     if ( extended_mesh ) then
       monotone_remap = ( hori_monotone /= horizontal_monotone_none )
-      call transport_runtime%remap_on_extended_mesh(                  &
-                          field_big_halo, field_n, monotone_remap,    &
-                          transport_metadata%get_enforce_min_value(), &
-                          transport_metadata%get_min_value(),         &
-                          stencil_extent )
+      call remap_on_extended_mesh(field_big_halo, field_n, monotone_remap,     &
+                                  transport_metadata%get_enforce_min_value(),  &
+                                  transport_metadata%get_min_value(),          &
+                                  stencil_extent )
     else
       call field_big_halo%initialise( field_n%get_function_space(), &
                                       halo_depth = stencil_extent )
@@ -181,16 +181,14 @@ module horizontal_sl_advective_alg_mod
 
     ! If needed remap the field on an extended cubed sphere
     if ( extended_mesh ) then
-      call transport_runtime%remap_on_extended_mesh(                  &
-                          field_x_big_halo, field_x, monotone_remap,  &
-                          transport_metadata%get_enforce_min_value(), &
-                          transport_metadata%get_min_value(),         &
-                          stencil_extent )
-      call transport_runtime%remap_on_extended_mesh(                  &
-                          field_y_big_halo, field_y, monotone_remap,  &
-                          transport_metadata%get_enforce_min_value(), &
-                          transport_metadata%get_min_value(),         &
-                          stencil_extent )
+      call remap_on_extended_mesh(field_x_big_halo, field_x, monotone_remap,   &
+                                  transport_metadata%get_enforce_min_value(),  &
+                                  transport_metadata%get_min_value(),          &
+                                  stencil_extent )
+      call remap_on_extended_mesh(field_y_big_halo, field_y, monotone_remap,   &
+                                  transport_metadata%get_enforce_min_value(),  &
+                                  transport_metadata%get_min_value(),          &
+                                  stencil_extent )
     else
       call field_x_big_halo%initialise( field_x%get_function_space(), &
                                         halo_depth = stencil_extent )

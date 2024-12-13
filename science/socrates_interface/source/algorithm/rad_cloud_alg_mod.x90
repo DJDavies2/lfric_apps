@@ -14,7 +14,7 @@ use field_mod,                     only: field_type
 use fs_continuity_mod,             only: W3, Wtheta
 use function_space_collection_mod, only: function_space_collection
 use function_space_mod,            only: function_space_type
-use geometric_constants_mod,       only: get_latitude, get_longitude
+use sci_geometric_constants_mod,   only: get_latitude, get_longitude
 use integer_field_mod,             only: integer_field_type
 use mesh_mod,                      only: mesh_type
 
@@ -127,8 +127,8 @@ subroutine rad_cloud_alg(rand_seed, n_cloud_layer, &
     year = int( datetime%year, i_def )
     day_of_year = int( xios_date_get_day_of_year(datetime), i_def )
     second_of_day = int( xios_date_get_second_of_day(datetime), i_def )
-    latitude  => get_latitude(twod_mesh%get_id())
-    longitude => get_longitude(twod_mesh%get_id())
+    latitude  => get_latitude(W3, twod_mesh%get_id())
+    longitude => get_longitude(W3, twod_mesh%get_id())
 
     ! Generate a unique seed for each gridpoint (actually for each area of the
     ! globe with a size defined by per_deg_lat) at the given time in seconds.

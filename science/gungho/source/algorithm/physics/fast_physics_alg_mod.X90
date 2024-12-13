@@ -14,7 +14,7 @@ module fast_physics_alg_mod
                                        stochastic_physics,                &
                                        stochastic_physics_um
 
-  use clock_mod,            only: clock_type
+  use model_clock_mod,      only: model_clock_type
   use constants_mod,        only: i_def,r_def, l_def
   use log_mod,              only: LOG_LEVEL_INFO, LOG_LEVEL_ERROR, log_event, &
                                   log_scratch_space
@@ -145,9 +145,9 @@ contains
     type( field_collection_type ), intent(inout) :: stph_fields
 
     ! scalars
-    integer(kind=i_def), intent(in) :: outer
-    class(clock_type),   intent(in) :: clock
-    real(kind=r_def),    intent(in) :: dt
+    integer(kind=i_def),     intent(in) :: outer
+    class(model_clock_type), intent(in) :: clock
+    real(kind=r_def),        intent(in) :: dt
 
     ! Local fields...
     ! ...for boundary layer

@@ -43,11 +43,7 @@ module tl_reconstruct_w3_field_alg_mod
                                             vertical_monotone_koren
   use transport_metadata_mod,         only: transport_metadata_type
   use transport_runtime_alg_mod,      only: transport_runtime_type
-  use reconstruct_w3_field_alg_mod,   only: get_flux_ndata_v,                &
-                                            get_reversible_flux_ndata_v,     &
-                                            get_vert_flux_coeffs,            &
-                                            get_reversible_vert_flux_coeffs, &
-                                            hori_w3_reconstruct_alg
+  use reconstruct_w3_field_alg_mod,   only: hori_w3_reconstruct_alg
   use sci_combine_multidata_field_kernel_mod, &
                                       only: combine_multidata_field_kernel_type
 
@@ -158,6 +154,9 @@ contains
                                         ls_field_old, transport_metadata, &
                                         final_rk_stage)
 
+    use transport_constants_mod, only: get_vert_w3_mol_coeffs,                 &
+                                       get_reversible_vert_w3_mol_coeffs
+
     implicit none
 
     type(field_type),              intent(inout) :: field_new
@@ -166,10 +165,10 @@ contains
     type(transport_metadata_type), intent(in)    :: transport_metadata
     logical(kind=l_def),           intent(in)    :: final_rk_stage
 
-    type(mesh_type),     pointer :: mesh => null()
+    type(mesh_type),     pointer :: mesh
     integer(kind=i_def)          :: mesh_id
-    integer(kind=i_def), pointer :: ndata_v => null()
-    type(field_type),    pointer :: vert_flux_coeffs => null()
+    integer(kind=i_def)          :: ndata_v
+    type(field_type),    pointer :: vert_flux_coeffs
     integer(kind=i_def)          :: vertical_order
     logical(kind=l_def)          :: logspace
     logical(kind=l_def)          :: reversible
@@ -182,14 +181,13 @@ contains
     mesh => field_new%get_mesh()
     mesh_id = mesh%get_id()
 
-    ! Compute vertical components of mass flux
     if ( reversible ) then
-      ndata_v => get_reversible_flux_ndata_v(mesh_id)
-      vert_flux_coeffs => get_reversible_vert_flux_coeffs(mesh_id)
+      ndata_v = fv_vertical_order
+      vert_flux_coeffs => get_reversible_vert_w3_mol_coeffs(mesh_id)
       vertical_order = fv_vertical_order - 1_i_def
     else
-      ndata_v => get_flux_ndata_v(mesh_id)
-      vert_flux_coeffs => get_vert_flux_coeffs(mesh_id)
+      ndata_v = 2*(fv_vertical_order + 1)
+      vert_flux_coeffs => get_vert_w3_mol_coeffs(mesh_id)
       vertical_order = fv_vertical_order
     end if
 
@@ -212,8 +210,6 @@ contains
       ! Free up offset stencil
       call tl_poly1d_vert_w3_reconstruction_final()
     end if
-
-    nullify(mesh, ndata_v, vert_flux_coeffs)
 
   end subroutine tl_vert_w3_reconstruct_alg
 

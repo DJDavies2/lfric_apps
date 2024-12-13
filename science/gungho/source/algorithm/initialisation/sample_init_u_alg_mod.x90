@@ -10,7 +10,7 @@ module sample_init_u_alg_mod
   use field_mod,                     only: field_type
   use finite_element_config_mod,     only: element_order
   use fs_continuity_mod,             only: W3, Wtheta
-  use geometric_constants_mod,       only: get_height, &
+  use sci_geometric_constants_mod,   only: get_height, &
                                            get_panel_id
   use initial_wind_config_mod,       only: profile_data_u,     &
                                            profile_data_v,     &

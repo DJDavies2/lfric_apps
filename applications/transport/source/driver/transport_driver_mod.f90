@@ -31,7 +31,7 @@ module transport_driver_mod
                                               SHIFTED, DOUBLE_LEVEL
   use field_mod,                        only: field_type
   use fs_continuity_mod,                only: W3, Wtheta
-  use geometric_constants_mod,          only: get_chi_inventory,      &
+  use sci_geometric_constants_mod,      only: get_chi_inventory,      &
                                               get_panel_id_inventory, &
                                               get_height
 
@@ -113,7 +113,6 @@ contains
     type(inventory_by_mesh_type), pointer :: panel_id_inventory
     character(len=str_def),   allocatable :: base_mesh_names(:)
     character(len=str_def),   allocatable :: extra_io_mesh_names(:)
-    logical(kind=l_def)                   :: create_rdef_div_operators
     type(field_type),             pointer :: height_w3
     type(field_type),             pointer :: height_wth
 
@@ -348,13 +347,7 @@ contains
 
     call init_fem( mesh_collection, chi_inventory, panel_id_inventory )
 
-    ! Create runtime_constants object.
-    create_rdef_div_operators = .true.
-    call create_runtime_constants( modeldb%configuration, &
-                                   chi_inventory,         &
-                                   panel_id_inventory,    &
-                                   modeldb%clock,         &
-                                   create_rdef_div_operators )
+    call create_runtime_constants()
 
     ! Set up transport runtime collection type
     ! Transport on only one horizontal local mesh

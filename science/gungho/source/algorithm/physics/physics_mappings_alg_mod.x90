@@ -10,15 +10,14 @@ module physics_mappings_alg_mod
   use base_mesh_config_mod,             only: geometry, &
                                               geometry_spherical
   use constants_mod,                    only: r_def, i_def
-  use fem_constants_mod,                only: get_rmultiplicity
+  use sci_fem_constants_mod,            only: get_rmultiplicity
   use field_mod,                        only: field_type
   use finite_element_config_mod,        only: nqp_exact
   use fs_continuity_mod,                only: W3, WTHETA, W2, W2H
   use function_space_mod,               only: function_space_type
   use function_space_collection_mod,    only: function_space_collection
-  use galerkin_projection_algorithm_mod, &
-                                        only: galerkin_projection_algorithm
-  use geometric_constants_mod,          only: get_height, get_panel_id, &
+  use sci_galerkin_projection_alg_mod,  only: galerkin_projection_algorithm
+  use sci_geometric_constants_mod,      only: get_height, get_panel_id, &
                                               get_coordinates,          &
                                               get_face_selector_ew,     &
                                               get_face_selector_ns

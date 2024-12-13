@@ -15,12 +15,12 @@ module bl_exp_alg_mod
 
   use function_space_mod,            only: function_space_type
   use function_space_collection_mod, only: function_space_collection
-  use fem_constants_mod,             only: get_rmultiplicity
+  use sci_fem_constants_mod,         only: get_rmultiplicity
   use fs_continuity_mod,             only: W2, W3, Wtheta
-  use geometric_constants_mod,       only: get_height, get_da_at_w2
   use gungho_modeldb_mod,            only: modeldb_type
-  use physical_op_constants_mod,     only: get_delta_at_wtheta, get_max_diff, &
-                                           get_rdz_fd1, get_dz_at_wtheta,     &
+  use sci_geometric_constants_mod,   only: get_height, get_da_at_w2,           &
+                                           get_delta_at_wtheta, get_dz_at_wtheta
+  use physics_constants_mod,         only: get_max_diff, get_rdz_fd1,          &
                                            get_rdz_w3, get_dtrdz_wth
   use map_fd_to_prognostics_alg_mod, only: set_wind
   use jules_surface_config_mod,      only: formdrag, formdrag_dist_drag
@@ -34,6 +34,7 @@ module bl_exp_alg_mod
   use timer_mod,            only: timer
   use log_mod,              only: log_event, LOG_LEVEL_DEBUG
   use mesh_mod,             only: mesh_type
+  use model_clock_mod,      only: model_clock_type
 
   use blayer_config_mod,          only: flux_bc_opt,                   &
                                         flux_bc_opt_specified_tstar,   &
@@ -76,13 +77,13 @@ contains
   !>@param[in,out] soil_fields         Fields for soil hydrology scheme
   !>@param[in]     snow_fields         (in,out) Fields for snow scheme
   !>@param[in]     aerosol_fields      Fields for aerosol scheme
-  !>@param[in]     flux_e, flux_h
+  !>@param[in]     model_clock         Time in the model
   subroutine bl_exp_alg(modeldb, visc_m, visc_h, theta, rho, exner, mr_n, &
                         derived_fields, radiation_fields,                 &
                         microphysics_fields, dmr_mphys, orography_fields, &
                         turbulence_fields, convection_fields,             &
                         cloud_fields, surface_fields, soil_fields,        &
-                        snow_fields, aerosol_fields)
+                        snow_fields, aerosol_fields, model_clock)
 
     use bl_exp_kernel_mod, only: bl_exp_kernel_type
     use psykal_lite_phys_mod, only: invoke_jules_exp_kernel_type
@@ -110,6 +111,8 @@ contains
     type( field_collection_type ), intent(in)    :: soil_fields
     type( field_collection_type ), intent(in)    :: snow_fields
     type( field_collection_type ), intent(in)    :: aerosol_fields
+
+    class( model_clock_type ), intent(in) :: model_clock
 
     ! Temporary fields unpacked fields from collections
     type( field_type ), pointer :: exner_in_wth  => null()
@@ -488,11 +491,11 @@ contains
     height_wth       => get_height( Wtheta, mesh%get_id() )
     height_w3        => get_height( W3, mesh%get_id() )
     delta            => get_delta_at_wtheta( mesh%get_id() )
-    max_diff_smag    => get_max_diff( mesh%get_id() )
+    max_diff_smag    => get_max_diff( mesh%get_id(), model_clock )
     dA               => get_da_at_w2( mesh%get_id() )
     rdz_fd1          => get_rdz_fd1( mesh%get_id() )
     rdz_w3           => get_rdz_w3( mesh%get_id() )
-    dtrdz_wth        => get_dtrdz_wth( mesh%get_id() )
+    dtrdz_wth        => get_dtrdz_wth( mesh%get_id(), model_clock )
     w2_rmultiplicity => get_rmultiplicity( W2, mesh%get_id() )
     dz_wth           => get_dz_at_wtheta( mesh%get_id() )
 

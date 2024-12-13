@@ -47,7 +47,7 @@ contains
     use level_heights_mod,           only: eta_theta_levels
     use fsd_parameters_mod,          only: fsd_eff_lam, fsd_eff_phi
 
-    use physical_op_constants_mod,   only : get_delta_at_wtheta
+    use sci_geometric_constants_mod, only: get_delta_at_wtheta
 
     implicit none
 

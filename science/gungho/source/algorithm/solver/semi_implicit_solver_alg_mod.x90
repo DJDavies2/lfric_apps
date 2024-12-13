@@ -41,7 +41,7 @@ module semi_implicit_solver_alg_mod
   use copy_field_alg_mod,                 only: copy_field
 
   ! Pointers
-  use geometric_constants_mod,            only: get_face_selector_ew, &
+  use sci_geometric_constants_mod,        only: get_face_selector_ew, &
                                                 get_face_selector_ns
 
   ! Algorithms
@@ -406,10 +406,10 @@ contains
                                            mr, write_moisture_diag, &
                                            first_iteration)
 
-    use fem_constants_mod,             only: get_normalisation_r_solver, &
-                                             get_normalisation, &
-                                             get_im3_div_r_solver, &
-                                             get_qr
+    use sci_fem_constants_mod,         only: get_qr
+    use solver_constants_mod,          only: get_normalisation_r_solver, &
+                                             get_im3_div_r_solver,       &
+                                             get_normalisation
     use fs_continuity_mod,             only: W2, Wtheta
     use mr_indices_mod,                only: nummr
     use moisture_conservation_alg_mod, only: moisture_conservation_alg
@@ -430,7 +430,8 @@ contains
     use r_solver_field_mod,            only: r_solver_field_type
     use timestepping_config_mod,       only: dt, tau_r
     use sci_enforce_bc_kernel_mod,     only: enforce_bc_kernel_type
-    use mass_matrix_solver_alg_mod,    only: mass_matrix_solver_alg
+    use sci_mass_matrix_solver_alg_mod, &
+                                       only: mass_matrix_solver_alg
     use sci_psykal_light_mod,          only: invoke_inc_rdefX_plus_rsolverY
     use sci_field_minmax_alg_mod,      only: log_field_minmax
 
@@ -496,6 +497,7 @@ contains
     end if
 
     ! Normalise theta & u residual
+    ! @TODO #416: can these be at r_solver precision?
     t_normalisation => get_normalisation(Wtheta, mesh_id)
     u_normalisation => get_normalisation(W2, mesh_id)
     call invoke( inc_X_times_Y(rhs(igh_u), u_normalisation) )

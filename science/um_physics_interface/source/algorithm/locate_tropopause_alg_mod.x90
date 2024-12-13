@@ -17,7 +17,7 @@ use io_config_mod,                 only: write_diag, use_xios_io
 use lfric_xios_write_mod,          only: write_field_generic
 use mesh_mod,                      only: mesh_type
 use field_parent_mod,              only: write_interface
-use geometric_constants_mod,       only: get_height
+use sci_geometric_constants_mod,   only: get_height
 use locate_tropopause_kernel_mod,  only: locate_tropopause_kernel_type
 use io_config_mod,                 only: subroutine_timers
 use timer_mod,                     only: timer

@@ -12,7 +12,8 @@ module tl_test_hydrostatic_mod
 
   use sci_assign_field_random_kernel_mod, only: assign_field_random_kernel_type
   use constants_mod,                  only: i_def, r_def, str_def
-  use fem_constants_mod,              only: get_qr
+  use dycore_constants_mod,           only: get_geopotential
+  use sci_fem_constants_mod,          only: get_qr
   use field_array_mod,                only: field_array_type
   use sci_field_bundle_builtins_mod,  only: clone_bundle
   use field_mod,                      only: field_type
@@ -22,7 +23,6 @@ module tl_test_hydrostatic_mod
   use function_space_collection_mod,  only: function_space_collection
   use gungho_modeldb_mod,             only: modeldb_type
   use moist_dyn_mod,                  only: num_moist_factors
-  use physical_op_constants_mod,      only: get_geopotential
   use planet_config_mod,              only: cp
   use quadrature_xyoz_mod,            only: quadrature_xyoz_type
   use log_mod,                        only: log_event,         &

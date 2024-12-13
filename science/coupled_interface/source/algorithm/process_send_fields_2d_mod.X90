@@ -67,7 +67,6 @@ module process_send_fields_2d_mod
 
     use sci_multi_extract_kernel_mod, only: multi_extract_kernel_type
     use value_based_mask_kernel_mod,  only: value_based_mask_kernel_type
-    use geometric_constants_mod,      only: get_latitude
     use sci_field_minmax_alg_mod,     only: log_field_minmax
 
     implicit none
@@ -290,11 +289,10 @@ module process_send_fields_2d_mod
 
     use fs_continuity_mod,             only: W3
     use function_space_collection_mod, only: function_space_collection
-    use geometric_constants_mod,       only: get_da_at_w2
+    use sci_geometric_constants_mod,   only: get_da_at_w2, get_da_msl_proj
     use jules_surface_types_mod,       only: ice
     use mesh_mod,                      only: mesh_type
     use sci_multi_extract_kernel_mod,  only: multi_extract_kernel_type
-    use physical_op_constants_mod,     only: get_da_msl_proj
 
     implicit none
 

@@ -9,6 +9,7 @@
 module lam_rhs_alg_mod
 
   use constants_mod,               only: r_def, i_def
+  use model_clock_mod,             only: model_clock_type
   use matrix_vector_kernel_mod,    only: matrix_vector_kernel_type
   use dg_matrix_vector_kernel_mod, only: dg_matrix_vector_kernel_type
   use dg_inc_matrix_vector_kernel_mod, &
@@ -18,8 +19,8 @@ module lam_rhs_alg_mod
   use timer_mod,                   only: timer
   use derived_config_mod,          only: bundle_size
   use si_operators_alg_mod,        only: get_rho_at_u
-  use fem_constants_mod,           only: get_im3_div,        &
-                                         get_w2_mass_matrix, &
+  use sci_fem_constants_mod,       only: get_im3_div
+  use dycore_constants_mod,        only: get_w2_mass_matrix, &
                                          w2_si_matrix
   use limited_area_constants_mod,  only: get_mask
   use fs_continuity_mod,           only: W2, W3, Wtheta
@@ -83,12 +84,14 @@ contains
   !>          applied for the whole rhs term before the solver is called.
   !> @param[in,out] rhs        RHS term for the mixed solve, to include LBCs
   !> @param[in]     lbc_fields Field collection containing LBC data
-  subroutine calc_rhs_lbc( rhs, lbc_fields )
+  !> @param[in]     model_clock     Time in the model
+  subroutine calc_rhs_lbc( rhs, lbc_fields, model_clock )
 
     implicit none
 
     type(field_type),            intent(inout) :: rhs(bundle_size)
     type(field_collection_type), intent(in)    :: lbc_fields
+    class(model_clock_type),     intent(in)    :: model_clock
 
     type(field_type),    pointer :: boundary_u => null()
     type(operator_type), pointer :: mm_vel     => null(), &
@@ -122,7 +125,7 @@ contains
     ! Obtain operators from runtime constants
     div => get_im3_div(mesh_id)
     ! m2 (or dl) + tau_u*dt*coriolis (lagged if required)
-    mm_vel => get_w2_mass_matrix(w2_si_matrix, mesh_id)
+    mm_vel => get_w2_mass_matrix(w2_si_matrix, mesh_id, model_clock)
 
     ! Obtain operators from SI operators
     r_solver_rho_at_u => get_rho_at_u()

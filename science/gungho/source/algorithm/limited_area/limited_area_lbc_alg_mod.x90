@@ -176,7 +176,7 @@ contains
     fs_enum =  lam_field%which_function_space()
     mesh    => lam_field%get_mesh()
 
-    onion_layers => get_onion_layers()
+    onion_layers => get_onion_layers(mesh%get_id())
 
     ! For example given onion layers:
     !  _ _ _ _ _
@@ -229,7 +229,7 @@ contains
     fs_enum =  lam_field_r_tran%which_function_space()
     mesh    => lam_field_r_tran%get_mesh()
 
-    onion_layers => get_onion_layers()
+    onion_layers => get_onion_layers(mesh%get_id())
 
     ! For example given onion layers:
     !  _ _ _ _ _

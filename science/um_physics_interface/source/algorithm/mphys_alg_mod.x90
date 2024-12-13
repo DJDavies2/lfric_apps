@@ -18,9 +18,8 @@ module mphys_alg_mod
                                   output_diags_for_mphys
   use constants_mod,        only: r_def, i_def
 
-  use geometric_constants_mod, only: get_height
-  use physical_op_constants_mod, only: get_dz_at_wtheta
-  use fs_continuity_mod,       only: W3, Wtheta
+  use sci_geometric_constants_mod, only: get_height, get_dz_at_wtheta
+  use fs_continuity_mod,           only: W3, Wtheta
 
   implicit none
 

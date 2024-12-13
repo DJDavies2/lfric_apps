@@ -25,7 +25,8 @@ USE extrusion_mod,              ONLY: extrusion_type,         &
                                       TWOD
 USE field_collection_mod,       ONLY: field_collection_type
 USE field_mod,                  ONLY: field_type
-USE geometric_constants_mod,    ONLY: get_chi_inventory, get_panel_id_inventory
+USE sci_geometric_constants_mod,      &
+                                ONLY: get_chi_inventory, get_panel_id_inventory
 USE gungho_extrusion_mod,       ONLY: create_extrusion
 USE halo_comms_mod,             ONLY: initialise_halo_comms
 USE inventory_by_mesh_mod,      ONLY: inventory_by_mesh_type
@@ -41,7 +42,6 @@ USE mesh_mod,                   ONLY: mesh_type
 USE mesh_collection_mod,        ONLY: mesh_collection
 USE namelist_collection_mod,    ONLY: namelist_collection_type
 USE namelist_mod,               ONLY: namelist_type
-USE lfricinp_runtime_constants_mod, ONLY: lfricinp_create_runtime_constants
 USE step_calendar_mod,          ONLY: step_calendar_type
 
 ! Interface to mpi
@@ -258,13 +258,6 @@ event_actor_ptr => io_context
 CALL model_clock%add_event( context_advance, event_actor_ptr)
 
 CALL advance(io_context, model_clock)
-
-! Initialise runtime constants
-CALL log_event('Initialising runtime constants', LOG_LEVEL_INFO)
-CALL lfricinp_create_runtime_constants(mesh_collection,    &
-                                       chi_inventory,      &
-                                       panel_id_inventory, &
-                                       seconds_per_step)
 
 nullify(chi, panel_id, chi_inventory, panel_id_inventory)
 

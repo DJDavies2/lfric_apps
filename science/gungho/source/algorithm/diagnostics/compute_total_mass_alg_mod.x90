@@ -35,22 +35,22 @@ contains
                                               integral_method_fe
     use extrusion_mod,                  only: TWOD
     use extrusion_config_mod,           only: planet_radius
-    use fem_constants_mod,              only: get_mass_matrix
+    use sci_fem_constants_mod,          only: get_mass_matrix
     use fs_continuity_mod,              only: W3, Wtheta
     use field_mod,                      only: field_type
     use finite_element_config_mod,      only: element_order
     use function_space_mod,             only: function_space_type
     use function_space_collection_mod,  only: function_space_collection
-    use geometric_constants_mod,        only: get_coordinates, &
+    use sci_geometric_constants_mod,    only: get_coordinates, &
                                               get_height,      &
-                                              get_panel_id
+                                              get_panel_id,    &
+                                              get_da_msl_proj
     use log_mod,                        only: log_event,         &
                                               log_scratch_space, &
                                               LOG_LEVEL_ERROR
     use mesh_mod,                       only: mesh_type
     use mesh_collection_mod,            only: mesh_collection
     use operator_mod,                   only: operator_type
-    use physical_op_constants_mod,      only: get_da_msl_proj
 
     implicit none
 

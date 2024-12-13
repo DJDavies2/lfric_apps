@@ -14,9 +14,8 @@ module tl_test_project_eos_pressure_mod
   use sci_assign_field_random_kernel_mod, &
                                       only: assign_field_random_kernel_type
   use constants_mod,                  only: i_def, r_def, str_def
-  use fem_constants_mod,              only: get_qr
-  use fem_constants_mod,              only: get_inverse_w3_mass_matrix
-  use geometric_constants_mod,        only: get_coordinates, &
+  use sci_fem_constants_mod,          only: get_qr, get_inverse_mass_matrix
+  use sci_geometric_constants_mod,    only: get_coordinates, &
                                             get_panel_id
   use field_array_mod,                only: field_array_type
   use sci_field_bundle_builtins_mod,  only: clone_bundle
@@ -108,7 +107,7 @@ module tl_test_project_eos_pressure_mod
     chi => get_coordinates(mesh%get_id())
     panel_id => get_panel_id(mesh%get_id())
     qr => get_qr()
-    m3_inv => get_inverse_w3_mass_matrix(mesh%get_id())
+    m3_inv => get_inverse_mass_matrix(W3, mesh%get_id())
 
     prognostic_fields => modeldb%fields%get_field_collection( &
                                            "prognostic_fields")

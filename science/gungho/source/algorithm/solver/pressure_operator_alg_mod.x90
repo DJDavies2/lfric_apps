@@ -33,8 +33,7 @@ module pressure_operator_alg_mod
                                                 LOG_LEVEL_ERROR, &
                                                 LOG_LEVEL_INFO,  &
                                                 log_scratch_space
-  use fem_constants_mod,                  only: get_inverse_w3_mass_matrix_r_solver, &
-                                                get_normalisation_r_solver
+  use solver_constants_mod,               only: get_normalisation_r_solver
   use limited_area_constants_mod,         only: get_mask_r_solver
   use fs_continuity_mod,                  only: W2, W3, Wtheta
   use si_operators_alg_mod,               only: get_m3_exner_star, &

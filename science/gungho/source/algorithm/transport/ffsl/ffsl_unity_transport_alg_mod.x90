@@ -28,8 +28,6 @@ module ffsl_unity_transport_alg_mod
   use constants_mod,                    only: r_tran, i_def, l_def
   use departure_points_config_mod,      only: horizontal_limit, &
                                               horizontal_limit_cap
-  use fem_constants_mod,                only: get_inverse_w3_mass_matrix, &
-                                              get_detj_at_w3_r_tran
   use sci_field_minmax_alg_mod,         only: get_field_minmax
   use field_mod,                        only: field_type
   use fs_continuity_mod,                only: W3, W2H
@@ -39,7 +37,7 @@ module ffsl_unity_transport_alg_mod
   use fv_divergence_y_kernel_mod,       only: fv_divergence_y_kernel_type
   use fv_divergence_z_kernel_mod,       only: fv_divergence_z_kernel_type
   use fv_divergence_2d_kernel_mod,      only: fv_divergence_2d_kernel_type
-  use geometric_constants_mod,          only: get_face_selector_ew, &
+  use sci_geometric_constants_mod,      only: get_face_selector_ew, &
                                               get_face_selector_ns, &
                                               get_panel_id
   use hori_dep_dist_ffsl_kernel_mod,    only: hori_dep_dist_ffsl_kernel_type
@@ -50,6 +48,7 @@ module ffsl_unity_transport_alg_mod
   use psykal_lite_transport_mod,        only: invoke_ffsl_panel_swap_kernel_type
   use r_tran_field_mod,                 only: r_tran_field_type
   use timer_mod,                        only: timer
+  use transport_constants_mod,          only: get_detj_at_w3_r_tran
 
   implicit none
 

@@ -9,8 +9,9 @@ module divergence_alg_mod
 
   use constants_mod,                   only: i_def
   use dg_matrix_vector_kernel_mod,     only: dg_matrix_vector_kernel_type
-  use fem_constants_mod,               only: get_div, &
-                                             get_inverse_W3_mass_matrix
+  use sci_fem_constants_mod,           only: get_div, &
+                                             get_inverse_mass_matrix
+  use fs_continuity_mod,               only: W3
   use field_mod,                       only: field_type
   use mesh_mod,                        only: mesh_type
   use operator_mod,                    only: operator_type
@@ -39,7 +40,7 @@ contains
     type(mesh_type),     pointer :: mesh => null()
 
     mesh      => wind%get_mesh()
-    mm_w3_inv => get_inverse_w3_mass_matrix(mesh%get_id())
+    mm_w3_inv => get_inverse_mass_matrix(W3, mesh%get_id())
     div       => get_div(mesh%get_id())
 
     call div_u%initialise( vector_space=divergence%get_function_space() )

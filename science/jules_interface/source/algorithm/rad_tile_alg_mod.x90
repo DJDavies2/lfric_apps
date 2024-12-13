@@ -17,7 +17,7 @@ use empty_data_mod,                only: empty_real_data
 use io_config_mod,                 only: subroutine_timers
 use timer_mod,                     only: timer
 use jules_control_init_mod,        only: n_surf_tile
-use physical_op_constants_mod,     only: get_dz_at_wtheta
+use sci_geometric_constants_mod,   only: get_dz_at_wtheta
 use fs_continuity_mod,             only: W3, Wtheta
 use radiation_config_mod,          only: l_planet_grey_surface, &
                                          planet_emissivity, planet_albedo, &

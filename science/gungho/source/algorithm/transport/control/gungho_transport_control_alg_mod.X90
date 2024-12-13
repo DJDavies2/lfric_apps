@@ -53,8 +53,6 @@ contains
   !> @params[in] mesh   The mesh to initialise on
   subroutine gungho_transport_control_alg_init( mesh )
 
-    use reconstruct_w3_field_alg_mod, only: reconstruct_w3_field_alg_init
-    use wt_advective_update_alg_mod,  only: wt_advective_update_alg_init
     use transport_config_mod,         only: profile_size,            &
                                             field_names,             &
                                             equation_form,           &
@@ -81,9 +79,8 @@ contains
     type(transport_metadata_type) :: transport_metadata
 
     integer(kind=i_def), allocatable :: local_mesh_ids(:)
-    type(mesh_type),         pointer :: aerosol_mesh => null()
-    type(mesh_type),         pointer :: shifted_mesh => null()
-    type(local_mesh_type),   pointer :: local_mesh => null()
+    type(mesh_type),         pointer :: aerosol_mesh
+    type(local_mesh_type),   pointer :: local_mesh
 
     write(log_scratch_space,'(A)')                               &
         'Transport scheme built with '//trim(PRECISION_R_TRAN)// &
@@ -122,16 +119,6 @@ contains
 
     end do
 
-    ! Initialise any necessary transport fields or coefficients
-    if ( check_any_scheme_mol() ) then
-      call reconstruct_w3_field_alg_init( mesh )
-      call wt_advective_update_alg_init( mesh )
-      if (check_any_shifted()) then
-        shifted_mesh => mesh_collection%get_mesh(mesh, SHIFTED)
-        call reconstruct_w3_field_alg_init( shifted_mesh )
-      end if
-    end if
-
     ! Initialise transport_runtime_collection
     local_mesh => mesh%get_local_mesh()
     if ( use_multires_coupling .and. coarse_aerosol_transport ) then
@@ -141,16 +128,6 @@ contains
       aerosol_mesh => mesh_collection%get_mesh(aerosol_mesh_name)
       local_mesh => aerosol_mesh%get_local_mesh()
       local_mesh_ids(2) = local_mesh%get_id()
-
-      ! Initialise transport coefficients for aerosol meshes
-      if ( check_any_scheme_mol() ) then
-        call reconstruct_w3_field_alg_init( aerosol_mesh )
-        call wt_advective_update_alg_init( aerosol_mesh )
-        if (check_any_shifted()) then
-          shifted_mesh => mesh_collection%get_mesh(aerosol_mesh, SHIFTED)
-          call reconstruct_w3_field_alg_init( shifted_mesh )
-        end if
-      end if
     else
       ! No coarse transport, so only one transport runtime needed
       allocate(local_mesh_ids(1))
@@ -212,7 +189,7 @@ contains
                                           )
 
     use derived_config_mod,              only: bundle_size
-    use fem_constants_mod,               only: get_mass_matrix
+    use sci_fem_constants_mod,           only: get_mass_matrix
     use sci_field_bundle_builtins_mod,   only: bundle_inc_axpby, &
                                                clone_bundle,     &
                                                set_bundle_scalar
@@ -606,14 +583,10 @@ contains
   !> @brief Calls finalising routines for gungho transport.
   subroutine gungho_transport_control_alg_final()
 
-    use reconstruct_w3_field_alg_mod, only: reconstruct_w3_field_alg_final
-    use wt_advective_update_alg_mod,  only: wt_advective_update_alg_final
     use transport_runtime_collection_mod, only: transport_runtime_collection_final
 
     implicit none
 
-    call reconstruct_w3_field_alg_final()
-    call wt_advective_update_alg_final()
     call transport_runtime_collection_final()
 
   end subroutine gungho_transport_control_alg_final

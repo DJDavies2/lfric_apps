@@ -17,7 +17,7 @@ module transport_init_fields_alg_mod
   use divergence_alg_mod,                only: divergence_alg
   use sci_enforce_lower_bound_kernel_mod, &
                                          only: enforce_lower_bound_kernel_type
-  use fem_constants_mod,                 only: get_qr
+  use sci_fem_constants_mod,             only: get_qr
   use finite_element_config_mod,         only: element_order
   use field_mod,                         only: field_type
   use sci_field_bundle_builtins_mod,     only: set_bundle_scalar
@@ -25,7 +25,7 @@ module transport_init_fields_alg_mod
   use function_space_mod,                only: function_space_type
   use function_space_collection_mod,     only: function_space_collection
   use fs_continuity_mod,                 only: W2, W3, Wtheta
-  use geometric_constants_mod,           only: get_coordinates,     &
+  use sci_geometric_constants_mod,       only: get_coordinates,     &
                                                get_panel_id
   use init_gungho_prognostics_alg_mod,   only: init_u_field
   use initial_tracer_field_sample_kernel_mod, &

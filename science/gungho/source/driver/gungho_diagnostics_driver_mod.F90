@@ -45,12 +45,12 @@ module gungho_diagnostics_driver_mod
   use mr_indices_mod,            only : nummr, mr_names
   use log_mod,                   only : log_event, &
                                         LOG_LEVEL_DEBUG
-  use geometric_constants_mod,   only : get_panel_id, get_height
-  use io_config_mod,             only: subroutine_timers, use_xios_io, write_fluxes
-  use timer_mod,                 only: timer
-  use transport_config_mod,      only: transport_ageofair
-  use physical_op_constants_mod, only: get_da_msl_proj
-  use gungho_modeldb_mod,        only: modeldb_type
+  use sci_geometric_constants_mod,      &
+                                 only : get_panel_id, get_height, get_da_msl_proj
+  use io_config_mod,             only : subroutine_timers, use_xios_io, write_fluxes
+  use timer_mod,                 only : timer
+  use transport_config_mod,      only : transport_ageofair
+  use gungho_modeldb_mod,        only : modeldb_type
 
 #ifdef UM_PHYSICS
   use pres_lev_diags_alg_mod,    only : pres_lev_diags_alg

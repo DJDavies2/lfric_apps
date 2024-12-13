@@ -8,6 +8,7 @@ module process_inputs_alg_mod
 
   use field_collection_mod, only : field_collection_type
   use field_mod,            only : field_type
+  use fs_continuity_mod,    only : W3
   use mesh_mod,             only : mesh_type
   use integer_field_mod,    only : integer_field_type
   use constants_mod,        only : i_def
@@ -35,7 +36,8 @@ module process_inputs_alg_mod
   use sci_int_multi_insert_kernel_mod, only: int_multi_insert_kernel_type
   use derived_config_mod,         only: l_esm_couple
   use set_topography_kernel_mod,  only: set_topography_kernel_type
-  use geometric_constants_mod,    only: get_latitude
+  use sci_geometric_constants_mod,      &
+                                  only: get_latitude
   use surface_config_mod,         only: amip_ice_thick
 
   implicit none
@@ -225,7 +227,7 @@ contains
       end if
 
       twod_mesh => sea_ice_thickness%get_mesh()
-      latitude => get_latitude( twod_mesh%get_id() )
+      latitude => get_latitude( W3, twod_mesh%get_id() )
 
       ! Surface fields
       if (init_option == init_option_fd_start_dump .and. &

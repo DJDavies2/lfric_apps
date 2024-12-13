@@ -14,7 +14,7 @@ module tl_end_of_transport_step_alg_mod
                                             check_any_wt_eqn_conservative
   use constants_mod,                  only: i_def, r_tran, l_def
   use end_of_transport_step_alg_mod,  only: build_up_flux
-  use fem_constants_mod,              only: get_directional_im3_div_r_tran
+  use transport_constants_mod,        only: get_directional_im3_div_r_tran
   use finite_element_config_mod,      only: element_order
   use fs_continuity_mod,              only: W2, W2H, W2V
   use function_space_mod,             only: function_space_type

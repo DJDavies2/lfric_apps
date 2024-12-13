@@ -13,12 +13,12 @@ module init_gungho_prognostics_alg_mod
   use constants_mod,                   only: r_def, i_def, radians_to_degrees
   use domain_mod,                      only: domain_type
   use extrusion_config_mod,            only: planet_radius
-  use mass_matrix_solver_alg_mod,      only: mass_matrix_solver_alg
+  use sci_mass_matrix_solver_alg_mod,  only: mass_matrix_solver_alg
   use sample_init_u_alg_mod,           only: sample_init_u_alg
-  use geometric_constants_mod,         only: get_coordinates, &
+  use sci_geometric_constants_mod,     only: get_coordinates, &
                                              get_panel_id,    &
                                              get_height
-  use fem_constants_mod,               only: get_inverse_w3_mass_matrix, &
+  use sci_fem_constants_mod,           only: get_inverse_mass_matrix, &
                                              get_qr
   use finite_element_config_mod,       only: element_order, &
                                              nqp_exact
@@ -314,7 +314,7 @@ contains
     mesh_id = rho%get_mesh_id()
     chi => get_coordinates(mesh_id)
     panel_id => get_panel_id(mesh_id)
-    m3_inv => get_inverse_w3_mass_matrix(mesh_id)
+    m3_inv => get_inverse_mass_matrix(W3, mesh_id)
     qr => get_qr()
 
     call r_rho%initialise( vector_space =  rho%get_function_space() )

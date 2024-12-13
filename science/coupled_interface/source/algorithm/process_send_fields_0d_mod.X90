@@ -12,7 +12,8 @@ module process_send_fields_0d_mod
                                            rmdi, i_timestep
   use field_collection_mod,          only: field_collection_type
   use field_mod,                     only: field_type
-  use geometric_constants_mod,       only: get_latitude
+  use fs_continuity_mod,             only: W3
+  use sci_geometric_constants_mod,   only: get_latitude
   use gungho_modeldb_mod,            only: modeldb_type
   use log_mod,                       only: log_event,       &
                                            LOG_LEVEL_INFO,  &
@@ -69,7 +70,7 @@ module process_send_fields_0d_mod
       ! Get the mesh
       mesh => fld%get_mesh()
       ! Get the latitude field
-      latitude => get_latitude(mesh%get_id())
+      latitude => get_latitude(W3, mesh%get_id())
       call invoke(value_based_mask_kernel_type(fld, latitude, &
                                                0.0_r_def, 2.0_r_def) )
     endif
@@ -78,7 +79,7 @@ module process_send_fields_0d_mod
       ! Get the mesh
       mesh => fld%get_mesh()
       ! Get the latitude field
-      latitude => get_latitude(mesh%get_id())
+      latitude => get_latitude(W3, mesh%get_id())
       call invoke(value_based_mask_kernel_type(fld, latitude, &
                                                -2.0_r_def, 0.0_r_def) )
     endif

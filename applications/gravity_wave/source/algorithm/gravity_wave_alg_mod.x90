@@ -9,6 +9,7 @@
 module gravity_wave_alg_mod
 
   use constants_mod,                  only: i_def, r_def, r_solver
+  use fs_continuity_mod,              only: W3
   use log_mod,                        only: log_event,         &
                                             log_scratch_space, &
                                             LOG_LEVEL_INFO,    &
@@ -18,9 +19,9 @@ module gravity_wave_alg_mod
   ! Configuration options
   use finite_element_config_mod,      only: element_order
   use timestepping_config_mod,        only: dt, alpha
-  use fem_constants_mod,              only: get_div,         &
+  use sci_fem_constants_mod,          only: get_div,         &
                                             get_mass_matrix, &
-                                            get_inverse_w3_mass_matrix
+                                            get_inverse_mass_matrix
   use limited_area_constants_mod,     only: get_mask
   use initial_temperature_config_mod, only: bvf_square
   use gravity_wave_constants_config_mod, only: cs_square,     &
@@ -499,7 +500,7 @@ contains
     !=== Do a single timestep ==============================================!
     mesh => wind%get_mesh()
     div => get_div(mesh%get_id())
-    m3_inv => get_inverse_w3_mass_matrix(mesh%get_id())
+    m3_inv => get_inverse_mass_matrix(W3, mesh%get_id())
 
     if ( limited_area ) then
       select case(b_space)

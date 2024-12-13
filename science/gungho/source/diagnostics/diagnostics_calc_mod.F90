@@ -20,7 +20,7 @@ module diagnostics_calc_mod
   use io_config_mod,                 only: use_xios_io,          &
                                            nodal_output_on_w3
   use files_config_mod,              only: diag_stem_name
-  use project_output_mod,            only: project_output
+  use sci_project_output_mod,        only: project_output
   use io_mod,                        only: ts_fname, &
                                            nodal_write_field
   use lfric_xios_write_mod,          only: write_field_generic
@@ -41,7 +41,7 @@ module diagnostics_calc_mod
                                            LOG_LEVEL_DEBUG,   &
                                            LOG_LEVEL_TRACE
   use mesh_mod,                      only: mesh_type
-  use geometric_constants_mod,       only: get_coordinates,      &
+  use sci_geometric_constants_mod,   only: get_coordinates,      &
                                            get_panel_id
 
   implicit none

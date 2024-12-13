@@ -18,7 +18,8 @@ module cld_diags_mod
                                only: field_collection_iterator_type
   use io_config_mod,           only: subroutine_timers
   use timer_mod,               only: timer
-  use geometric_constants_mod, only: get_height
+  use sci_geometric_constants_mod,   &
+                               only: get_height
   use cloud_config_mod,        only: filter_optical_depth, opt_depth_thresh
   use fs_continuity_mod,       only: Wtheta, W3
   use cld_diags_kernel_mod,    only: cld_diags_kernel_type

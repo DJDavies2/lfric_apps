@@ -16,7 +16,7 @@ module swe_predictors_alg_mod
 
   ! Constants and types
   use constants_mod,              only: r_def
-  use fem_constants_mod,          only: get_im3_div
+  use sci_fem_constants_mod,      only: get_im3_div
   use field_indices_mod,          only: isw_u, isw_g
   use field_mod,                  only: field_type
   use operator_mod,               only: operator_type
@@ -28,9 +28,8 @@ module swe_predictors_alg_mod
                                         cap_density_predictor
 
   ! Algorithms and Kernels
-  use dg_matrix_vector_kernel_mod, &
-                                  only: dg_matrix_vector_kernel_type
-  use mass_matrix_solver_alg_mod, only: mass_matrix_solver_alg
+  use dg_matrix_vector_kernel_mod,    only: dg_matrix_vector_kernel_type
+  use sci_mass_matrix_solver_alg_mod, only: mass_matrix_solver_alg
 
   implicit none
 

@@ -9,17 +9,18 @@
 module rhs_alg_mod
 
   use constants_mod,                       only: r_def, r_second, i_def, l_def
+  use model_clock_mod,                     only: model_clock_type
   use log_mod,                             only: log_event, &
                                                  LOG_LEVEL_ERROR
   use sci_enforce_bc_kernel_mod,           only: enforce_bc_kernel_type
-  use geometric_constants_mod,             only: get_coordinates,     &
+  use sci_geometric_constants_mod,         only: get_coordinates,     &
                                                  get_panel_id
-  use fem_constants_mod,                   only: get_mass_matrix,  &
-                                                 get_inverse_w3_mass_matrix, &
+  use sci_fem_constants_mod,               only: get_mass_matrix,  &
+                                                 get_inverse_mass_matrix
+  use dycore_constants_mod,                only: get_coriolis,       &
+                                                 get_geopotential,   &
                                                  get_w2_mass_matrix, &
                                                  w2_damping_layer_matrix
-  use physical_op_constants_mod,           only: get_coriolis,     &
-                                                 get_geopotential
   use field_mod,                           only: field_type
   use finite_element_config_mod,           only: element_order, &
                                                  vorticity_in_w1
@@ -51,7 +52,7 @@ module rhs_alg_mod
   use mesh_mod,                            only: mesh_type
   use vorticity_advection_kernel_mod,      only: vorticity_advection_kernel_type
   use compute_vorticity_alg_mod,           only: compute_vorticity_alg
-  use fs_continuity_mod,                   only: W1, W2, Wtheta
+  use fs_continuity_mod,                   only: W1, W2, W3, Wtheta
   use function_space_collection_mod,       only: function_space_collection
   use w2_vorticity_advection_kernel_mod,   only: w2_vorticity_advection_kernel_type
   use pressure_gradient_p0_kernel_mod,     only: pressure_gradient_p0_kernel_type
@@ -89,8 +90,9 @@ contains
   !> @param[in]     dlayer_rhs      Use damping layer in rhs yes/no
   !> @param[in]     compute_rhs_t_d Compute rhs for the potential temperature
   !!                                and density
+  !> @param[in]     model_clock     Time in the model
   subroutine rhs_alg( rhs, alpha_dt, base_state, state, moist_dyn, compute_eos, &
-                      compute_rhs_t_d, dlayer_rhs )
+                      compute_rhs_t_d, dlayer_rhs, model_clock )
     use boundaries_config_mod, only: limited_area
     implicit none
 
@@ -104,16 +106,17 @@ contains
     type(field_type),             intent(inout) :: rhs(bundle_size)
     logical(kind=l_def),          intent(in)    :: compute_eos
     logical(kind=l_def),          intent(in)    :: compute_rhs_t_d
+    class(model_clock_type),      intent(in)    :: model_clock
 
     if (   (rhs(igh_u)%get_element_order() == 0) &
      .and. (.not. si_momentum_equation)          &
      .and. (.not. limited_area )                 &
      .and. (eos_method == eos_method_sampled) ) then
       call rhs_default_alg( rhs, alpha_dt, base_state, state, moist_dyn, compute_eos, &
-                            compute_rhs_t_d, dlayer_rhs )
+                            compute_rhs_t_d, dlayer_rhs, model_clock )
     else
       call rhs_general_alg( rhs, alpha_dt, base_state, state, moist_dyn, compute_eos, &
-                            compute_rhs_t_d, dlayer_rhs )
+                            compute_rhs_t_d, dlayer_rhs, model_clock )
     end if
 
   end subroutine rhs_alg
@@ -121,7 +124,7 @@ contains
   !> @brief rhs algorithm for the default setup ( lowest order elements,
   !!        explicit momentum advection, global and sampled eos)
   subroutine rhs_default_alg( rhs, alpha_dt, base_state, state, moist_dyn, compute_eos, &
-                              compute_rhs_t_d, dlayer_rhs )
+                              compute_rhs_t_d, dlayer_rhs, model_clock )
 
     implicit none
 
@@ -135,6 +138,7 @@ contains
     type(field_type),             intent(inout) :: rhs(bundle_size)
     logical(kind=l_def),          intent(in)    :: compute_eos
     logical(kind=l_def),          intent(in)    :: compute_rhs_t_d
+    class(model_clock_type),      intent(in)    :: model_clock
 
     type(operator_type), pointer :: mm_vel    => null(), &
                                     mm_wtheta => null(), &
@@ -167,7 +171,7 @@ contains
 
     ! Using modified velocity mass matrix if needing damping layer
     if (dlayer_rhs) then
-      mm_vel => get_w2_mass_matrix(w2_damping_layer_matrix, mesh_id)
+      mm_vel => get_w2_mass_matrix(w2_damping_layer_matrix, mesh_id, model_clock)
     else
       mm_vel => get_mass_matrix(W2, mesh_id)
     end if
@@ -234,7 +238,7 @@ contains
 
   !> @brief rhs algorithm for any generic setup
   subroutine rhs_general_alg( rhs, alpha_dt, base_state, state, moist_dyn, compute_eos, &
-                              compute_rhs_t_d, dlayer_rhs )
+                              compute_rhs_t_d, dlayer_rhs, model_clock )
 
     implicit none
 
@@ -248,6 +252,7 @@ contains
     type(field_type),             intent(inout) :: rhs(bundle_size)
     logical(kind=l_def),          intent(in)    :: compute_eos
     logical(kind=l_def),          intent(in)    :: compute_rhs_t_d
+    class(model_clock_type),      intent(in)    :: model_clock
 
     type(operator_type), pointer :: mm_vel    => null(), &
                                     mm_wtheta => null(), &
@@ -290,11 +295,11 @@ contains
     mm_wtheta    => get_mass_matrix(Wtheta, mesh_id)
     chi          => get_coordinates(mesh_id)
     panel_id     => get_panel_id(mesh_id)
-    mm_w3_inv    => get_inverse_w3_mass_matrix(mesh_id)
+    mm_w3_inv    => get_inverse_mass_matrix(W3, mesh_id)
 
     ! Using modified velocity mass matrix if needing damping layer
     if (dlayer_rhs) then
-      mm_vel => get_w2_mass_matrix(w2_damping_layer_matrix, mesh_id)
+      mm_vel => get_w2_mass_matrix(w2_damping_layer_matrix, mesh_id, model_clock)
     else
       mm_vel => get_mass_matrix(W2, mesh_id)
     end if

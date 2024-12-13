@@ -17,7 +17,7 @@ module swe_init_fields_alg_mod
   use fs_continuity_mod,                  only: W1
   use function_space_collection_mod,      only: function_space_collection
   use function_space_mod,                 only: function_space_type
-  use geometric_constants_mod,            only: get_coordinates, &
+  use sci_geometric_constants_mod,        only: get_coordinates, &
                                                 get_panel_id
   use log_mod,                            only: log_event,         &
                                                 log_scratch_space, &
@@ -42,7 +42,7 @@ module swe_init_fields_alg_mod
   use initial_swe_tracer_kernel_mod,      only: initial_swe_tracer_kernel_type
   use initial_swe_u_kernel_mod,           only: initial_swe_u_kernel_type
   use initial_vorticity_v2_kernel_mod,    only: initial_vorticity_v2_kernel_type
-  use mass_matrix_solver_alg_mod,         only: mass_matrix_solver_alg
+  use sci_mass_matrix_solver_alg_mod,     only: mass_matrix_solver_alg
   use strong_curl_kernel_mod,             only: strong_curl_kernel_type
   use w2_to_w1_projection_kernel_mod,     only: w2_to_w1_projection_kernel_type
 

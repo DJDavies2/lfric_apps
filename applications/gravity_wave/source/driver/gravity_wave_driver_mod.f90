@@ -36,7 +36,6 @@ module gravity_wave_driver_mod
                                       use_xios_io,           &
                                       nodal_output_on_w3
   use io_context_mod,           only: io_context_type
-  use runtime_constants_mod,    only: create_runtime_constants
   use sci_checksum_alg_mod,     only: checksum_alg
 
   use boundaries_config_mod,    only: limited_area

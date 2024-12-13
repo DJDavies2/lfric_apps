@@ -13,7 +13,7 @@ module tl_test_rhs_project_eos_mod
 
   use sci_assign_field_random_kernel_mod, only: assign_field_random_kernel_type
   use constants_mod,                  only: i_def, r_def, str_def
-  use fem_constants_mod,              only: get_qr
+  use sci_fem_constants_mod,          only: get_qr
   use field_array_mod,                only: field_array_type
   use sci_field_bundle_builtins_mod,  only: clone_bundle
   use field_mod,                      only: field_type
@@ -23,7 +23,7 @@ module tl_test_rhs_project_eos_mod
   use fs_continuity_mod,              only: W3, Wtheta
   use function_space_collection_mod,  only: function_space_collection
   use moist_dyn_mod,                  only: num_moist_factors, gas_law
-  use geometric_constants_mod,        only: get_coordinates, &
+  use sci_geometric_constants_mod,    only: get_coordinates, &
                                             get_panel_id
   use gungho_modeldb_mod,             only: modeldb_type
   use operator_mod,                   only: operator_type

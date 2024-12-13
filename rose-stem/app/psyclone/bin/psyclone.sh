@@ -39,7 +39,7 @@ kernel_src_flag[2]=
 # Declare project algorithm directories
 declare -a alg_src_dir
 alg_src_dir[0]="${BASE_SRC_DIR}lfric_apps/science/gungho/source/algorithm"
-alg_src_dir[1]="${BASE_SRC_DIR}lfric_core/infrastructure/source/field ${BASE_SRC_DIR}lfric_core/components/lfric-xios/source"
+alg_src_dir[1]="${BASE_SRC_DIR}lfric_core/infrastructure/source/field ${BASE_SRC_DIR}lfric_core/components/lfric-xios/source ${BASE_SRC_DIR}lfric_core/components/science/source/algorithm"
 alg_src_dir[2]="${BASE_SRC_DIR}lfric_apps/applications/lfricinputs/source/scintelapi/generators/toolset ${BASE_SRC_DIR}lfric_apps/applications/lfricinputs/source/scintelapi/generators/analytic"
 
 PRE_PROCESS_MACROS="RDEF_PRECISION=64"

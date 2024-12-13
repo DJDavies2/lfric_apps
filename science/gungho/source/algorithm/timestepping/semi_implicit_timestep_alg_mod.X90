@@ -14,7 +14,7 @@ module semi_implicit_timestep_alg_mod
                                        log_scratch_space, &
                                        LOG_LEVEL_INFO
   use extrusion_mod,             only: TWOD
-  use fem_constants_mod,         only: get_mass_matrix,       &
+  use sci_fem_constants_mod,     only: get_mass_matrix,       &
                                        get_qr
   use sci_field_bundle_builtins_mod,                      &
                                  only: clone_bundle,      &
@@ -107,7 +107,7 @@ module semi_implicit_timestep_alg_mod
                                         semi_implicit_solver_alg_final
   use derive_exner_from_eos_alg_mod, &
                                   only: derive_exner_from_eos
-  use mass_matrix_solver_alg_mod, &
+  use sci_mass_matrix_solver_alg_mod, &
                                   only: mass_matrix_solver_alg
   use moist_dyn_factors_alg_mod,  only: moist_dyn_factors_alg
   use update_prognostic_scalars_alg_mod, &
@@ -503,7 +503,7 @@ contains
       call prognostic_fields%get_field('theta_ref', theta_ref)
       call prognostic_fields%get_field('rho_ref', rho_ref)
       call prognostic_fields%get_field('exner_ref', exner_ref)
-      call compute_si_operators(theta_ref, rho_ref, exner_ref, cast_dt, moist_dyn_ref)
+      call compute_si_operators(theta_ref, rho_ref, exner_ref, model_clock, moist_dyn_ref)
       nullify(theta_ref, rho_ref, exner_ref, moist_dyn_ref, moist_dyn_ref_array)
     end if
 
@@ -686,7 +686,7 @@ contains
 
     if ( mod(model_clock%get_step() - 1_i_def, reference_reset_freq) == 0_i_def ) then
       ! Compute semi-implicit operators with current model state
-      call compute_si_operators(self%state(igh_t), self%state(igh_d), self%state(igh_p), cast_dt, moist_dyn)
+      call compute_si_operators(self%state(igh_t), self%state(igh_d), self%state(igh_p), model_clock, moist_dyn)
 
       ! Copy over model state for checkpointing if required
       if (checkpoint_reference_fields) then
@@ -755,7 +755,7 @@ contains
     call rhs_alg( self%rhs_n, varbeta*cast_dt,                    &
                   self%state_after_slow, self%state_n, moist_dyn, &
                   compute_eos=.false., compute_rhs_t_d=.true.,    &
-                  dlayer_rhs=.false. )
+                  dlayer_rhs=.false., model_clock=model_clock )
 
     call copy_bundle(self%state_after_slow, self%advected_state,  bundle_size)
     ! Set predictors for transport
@@ -830,7 +830,7 @@ contains
         call rhs_alg( self%rhs_np1, -varalpha*cast_dt,            &
                       self%state, self%state, moist_dyn,          &
                       compute_eos=.true., compute_rhs_t_d=.true., &
-                      dlayer_rhs=dlayer_on )
+                      dlayer_rhs=dlayer_on, model_clock=model_clock )
       else
         if (self%use_moisture) call copy_bundle(self%mr_after_slow, mr, nummr)
       end if
@@ -914,14 +914,14 @@ contains
           if (inner > 1) call rhs_alg( self%rhs_np1, -varalpha*cast_dt,             &
                                        self%state, self%state, moist_dyn,           &
                                        compute_eos=.true., compute_rhs_t_d=.false., &
-                                       dlayer_rhs=dlayer_on )
+                                       dlayer_rhs=dlayer_on, model_clock=model_clock )
 
           !--------------------------------------------------------------------
           ! Compute the LAM LBCs and RHS
           !--------------------------------------------------------------------
           if ( limited_area .and. inner == 1 .and. outer == 1 ) then
             call lam_solver_lbc(self%state(igh_u), lbc_fields)
-            call calc_rhs_lbc(self%rhs_lbc, lbc_fields)
+            call calc_rhs_lbc(self%rhs_lbc, lbc_fields, model_clock)
           end if
 
           !--------------------------------------------------------------------

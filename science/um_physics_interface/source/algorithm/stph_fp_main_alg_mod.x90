@@ -11,6 +11,7 @@ module stph_fp_main_alg_mod
     use constants_mod,       only: r_def, i_def, str_def, pi
     use extrusion_mod,       only: TWOD
     use field_mod,           only: field_type
+    use fs_continuity_mod,   only: W3
     use mesh_mod,            only: mesh_type
     use mesh_collection_mod, only: mesh_collection
     use io_config_mod,       only: subroutine_timers
@@ -71,8 +72,8 @@ module stph_fp_main_alg_mod
   use psykal_lite_phys_mod, only: invoke_spectral_2_cs_kernel_type
 
   ! Get operators
-  use geometric_constants_mod,   only: get_longitude
-  use physical_op_constants_mod,      only: get_Pnm_star
+  use sci_geometric_constants_mod, only: get_longitude
+  use physics_constants_mod,       only: get_Pnm_star
 
   implicit none
 
@@ -177,7 +178,7 @@ module stph_fp_main_alg_mod
   twod_mesh => mesh_collection%get_mesh(mesh, TWOD)
 
   ! Get longitude
-  longitude => get_longitude(twod_mesh%get_id())
+  longitude => get_longitude(W3, twod_mesh%get_id())
 
   ! Get Matrix of Legendre Polynomials (scaled) Pnm_star
   Pnm_star => get_Pnm_star(twod_mesh%get_id())
