@@ -56,7 +56,7 @@ module tl_test_rhs_alg_mod
 
     character(str_def) :: label = "rhs_alg"
 
-    type(field_collection_type ), pointer :: ls_fields => null()
+    type(field_collection_type ), pointer :: ls_fields
 
 
     type( field_type ) :: state(bundle_size)
@@ -93,7 +93,7 @@ module tl_test_rhs_alg_mod
     call log_event( "TL Test: " // trim(label), &
                      LOG_LEVEL_INFO )
 
-    ls_fields         => modeldb%model_data%ls_fields
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
     moisture_fields => modeldb%fields%get_field_collection("moisture_fields")
     call moisture_fields%get_field("ls_moist_dyn", ls_moist_dyn_array)
     ls_moist_dyn => ls_moist_dyn_array%bundle

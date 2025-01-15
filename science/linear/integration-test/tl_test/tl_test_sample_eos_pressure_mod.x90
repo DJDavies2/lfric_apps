@@ -56,7 +56,7 @@ module tl_test_sample_eos_pressure_mod
     character(str_def) :: label = "sample_eos_pressure"
 
     type(field_collection_type ), pointer :: prognostic_fields => null()
-    type(field_collection_type ), pointer :: ls_fields => null()
+    type(field_collection_type ), pointer :: ls_fields
 
     ! Input
     type(field_type), pointer :: n_rho => null()
@@ -95,7 +95,7 @@ module tl_test_sample_eos_pressure_mod
 
     prognostic_fields => modeldb%fields%get_field_collection( &
                                            "prognostic_fields")
-    ls_fields         => modeldb%model_data%ls_fields
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
 
     ! Input fields
     call prognostic_fields%get_field('rho', n_rho)

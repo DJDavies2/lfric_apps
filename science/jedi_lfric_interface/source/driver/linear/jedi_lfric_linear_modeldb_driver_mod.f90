@@ -120,6 +120,12 @@ contains
                                                     table_len = 100)
     call modeldb%fields%add_empty_field_collection( "diagnostic_fields", &
                                                     table_len = 100 )
+    call modeldb%fields%add_empty_field_collection( "lbc_fields", &
+                                                    table_len = 100 )
+    call modeldb%fields%add_empty_field_collection( "radiation_fields", &
+                                                    table_len = 100 )
+    call modeldb%fields%add_empty_field_collection( "fd_fields",        &
+                                                    table_len = 100 )
 
     call modeldb%io_contexts%initialise(modeldb_name, table_len=100)
 

@@ -133,8 +133,6 @@ contains
     depository => modeldb%fields%get_field_collection("depository")
     prognostics => modeldb%fields%get_field_collection("prognostic_fields")
 
-    ls_fields => modeldb%model_data%ls_fields
-
     moisture_fields => modeldb%fields%get_field_collection("moisture_fields")
     call moisture_fields%get_field("ls_mr",ls_mr_array)
     call moisture_fields%get_field("ls_moist_dyn", ls_moist_dyn_array)
@@ -145,7 +143,9 @@ contains
                                      "Setting up ls field collection"
     call log_event(log_scratch_space, LOG_LEVEL_INFO)
 
-    call ls_fields%initialise(name='ls_fields', table_len=100)
+    call modeldb%fields%add_empty_field_collection("ls_fields", table_len = 100)
+
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
 
 
     call setup_field( ls_fields, depository, prognostics, "ls_rho", W3,       &
@@ -219,7 +219,9 @@ contains
     model_axes => get_time_axes_from_collection(modeldb%values, "model_axes" )
 
     ls_times_list => model_axes%ls_times_list
-    ls_fields => modeldb%model_data%ls_fields
+
+    call modeldb%fields%add_empty_field_collection("ls_fields", table_len = 100)
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
 
     moisture_fields => modeldb%fields%get_field_collection("moisture_fields")
     call moisture_fields%get_field("ls_mr",ls_mr_array)
@@ -230,8 +232,6 @@ contains
     write(log_scratch_space,'(A,A)') "Create ls fields: "// &
                                      "Setting up ls field collection"
     call log_event(log_scratch_space, LOG_LEVEL_INFO)
-
-    call ls_fields%initialise(name='ls_fields', table_len=100)
 
     call ls_time_axis%initialise( "ls_time", file_id="ls", &
                                    yearly=cyclic,          &
@@ -313,6 +313,7 @@ contains
 
     integer(i_def)              :: i
     type( field_type ), pointer :: ls_field => null()
+    type( field_collection_type ), pointer :: ls_fields
     integer(i_def), parameter   :: number_steps = 10
 
     type(field_collection_type), pointer :: moisture_fields => null()
@@ -323,6 +324,8 @@ contains
 
     ! Get model_axes out of modeldb
     model_axes => get_time_axes_from_collection(modeldb%values, "model_axes" )
+
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
 
     moisture_fields => modeldb%fields%get_field_collection("moisture_fields")
     call moisture_fields%get_field("ls_mr", ls_mr_array)
@@ -373,7 +376,7 @@ contains
 
         call init_ls_file_alg( model_axes%ls_times_list, &
                                modeldb%clock,                    &
-                               modeldb%model_data%ls_fields,     &
+                               ls_fields,                        &
                                ls_mr_array%bundle,               &
                                ls_moist_dyn_array%bundle )
 
@@ -384,16 +387,16 @@ contains
     end select
 
     ! Print the min and max values of the linearisation fields.
-    call modeldb%model_data%ls_fields%get_field("ls_u", ls_field)
+    call ls_fields%get_field("ls_u", ls_field)
     call log_field_minmax( LOG_LEVEL_INFO, 'ls_u', ls_field )
 
-    call modeldb%model_data%ls_fields%get_field("ls_rho", ls_field)
+    call ls_fields%get_field("ls_rho", ls_field)
     call log_field_minmax( LOG_LEVEL_INFO, 'ls_rho', ls_field )
 
-    call modeldb%model_data%ls_fields%get_field("ls_exner", ls_field)
+    call ls_fields%get_field("ls_exner", ls_field)
     call log_field_minmax( LOG_LEVEL_INFO, 'ls_exner', ls_field )
 
-    call modeldb%model_data%ls_fields%get_field("ls_theta", ls_field)
+    call ls_fields%get_field("ls_theta", ls_field)
     call log_field_minmax( LOG_LEVEL_INFO, 'ls_theta', ls_field )
 
     ls_field => ls_mr_array%bundle(1)

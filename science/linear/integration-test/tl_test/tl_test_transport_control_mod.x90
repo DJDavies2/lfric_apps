@@ -56,7 +56,7 @@ module tl_test_transport_control_mod
     character(str_def) :: label = "transport_control"
 
     type(field_collection_type), pointer :: prognostic_fields => null()
-    type(field_collection_type), pointer :: ls_fields => null()
+    type(field_collection_type), pointer :: ls_fields
 
     type(field_type), pointer :: ls_u => null()
     type(field_type), pointer :: ls_rho => null()
@@ -111,7 +111,7 @@ module tl_test_transport_control_mod
 
     prognostic_fields => modeldb%fields%get_field_collection( &
                                            "prognostic_fields")
-    ls_fields         => modeldb%model_data%ls_fields
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
     moisture_fields => modeldb%fields%get_field_collection("moisture_fields")
     call moisture_fields%get_field("mr", mr_array)
     call moisture_fields%get_field("moist_dyn", moist_dyn_array)

@@ -49,7 +49,7 @@ contains
     type(field_collection_type), pointer :: moisture_fields => null()
     type(field_array_type), pointer      :: ls_mr_array => null()
 
-    type( field_collection_type ), pointer :: ls_fields => null()
+    type( field_collection_type ), pointer :: ls_fields
     type( field_type ),            pointer :: ls_mr(:) => null()
 
     type( field_type), pointer :: ls_theta => null()
@@ -63,7 +63,7 @@ contains
 
     call log_event("Linear: writing diagnostic output", LOG_LEVEL_INFO)
 
-    ls_fields => modeldb%model_data%ls_fields
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
     moisture_fields => modeldb%fields%get_field_collection("moisture_fields")
     call moisture_fields%get_field("ls_mr", ls_mr_array)
     ls_mr => ls_mr_array%bundle

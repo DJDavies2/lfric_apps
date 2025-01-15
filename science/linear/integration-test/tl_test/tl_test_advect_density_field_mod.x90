@@ -67,7 +67,7 @@ module tl_test_advect_density_field_mod
     character(str_def) :: label = "advect_density_field"
 
     type(field_collection_type),   pointer :: prognostic_fields => null()
-    type(field_collection_type),   pointer :: ls_fields => null()
+    type(field_collection_type),   pointer :: ls_fields
     type(transport_metadata_type), pointer :: transport_metadata => null()
 
     ! Input
@@ -102,7 +102,7 @@ module tl_test_advect_density_field_mod
 
     prognostic_fields => modeldb%fields%get_field_collection( &
                                            "prognostic_fields")
-    ls_fields         => modeldb%model_data%ls_fields
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
 
     ! Input
     call prognostic_fields%get_field('u', n_u)

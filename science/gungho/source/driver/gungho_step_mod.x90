@@ -87,7 +87,7 @@ module gungho_step_mod
     type( field_array_type ),      pointer :: mr_array
     type( field_type ),            pointer :: mr(:) => null()
     type( field_collection_type ), pointer :: derived_fields
-    type( field_collection_type ), pointer :: radiation_fields => null()
+    type( field_collection_type ), pointer :: radiation_fields
     type( field_collection_type ), pointer :: microphysics_fields
     type( field_collection_type ), pointer :: turbulence_fields
     type( field_collection_type ), pointer :: convection_fields
@@ -133,7 +133,7 @@ module gungho_step_mod
     mr => mr_array%bundle
     derived_fields => modeldb%fields%get_field_collection( &
                                                          "derived_fields")
-    radiation_fields => modeldb%model_data%radiation_fields
+    radiation_fields => modeldb%fields%get_field_collection("radiation_fields")
     microphysics_fields => modeldb%fields%get_field_collection( &
                                                          "microphysics_fields")
     turbulence_fields => modeldb%fields%get_field_collection("turbulence_fields")

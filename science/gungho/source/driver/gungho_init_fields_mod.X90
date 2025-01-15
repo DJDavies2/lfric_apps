@@ -333,6 +333,9 @@ subroutine create_model_data( modeldb,      &
     type(field_collection_type), pointer :: derived_fields
     type(field_collection_type), pointer :: cloud_fields
     type(field_collection_type), pointer :: aerosol_fields
+    type(field_collection_type), pointer :: lbc_fields
+    type(field_collection_type), pointer :: radiation_fields
+    type(field_collection_type), pointer :: fd_fields
 
     type(gungho_time_axes_type), pointer :: model_axes
 
@@ -368,6 +371,7 @@ subroutine create_model_data( modeldb,      &
     call modeldb%fields%add_empty_field_collection("moisture_fields", table_len = 10)
     moisture_fields => modeldb%fields%get_field_collection("moisture_fields")
     prognostic_fields => modeldb%fields%get_field_collection("prognostic_fields")
+    lbc_fields => modeldb%fields%get_field_collection("lbc_fields")
 
     call moist_dyn_array_local%initialise(num_moist_factors, name="moist_dyn")
     call moisture_fields%add_field(moist_dyn_array_local)
@@ -432,6 +436,8 @@ subroutine create_model_data( modeldb,      &
     cloud_fields => modeldb%fields%get_field_collection("cloud_fields")
     call modeldb%fields%add_empty_field_collection("aerosol_fields", table_len = 100)
     aerosol_fields => modeldb%fields%get_field_collection("aerosol_fields")
+    radiation_fields  => modeldb%fields%get_field_collection("radiation_fields")
+    fd_fields         => modeldb%fields%get_field_collection("fd_fields")
 
     call field_mapper%init( depository,                               &
                             moisture_fields,                          &
@@ -441,7 +447,7 @@ subroutine create_model_data( modeldb,      &
                             con_tracer_all_outer,                     &
                             con_tracer_last_outer,                    &
                             derived_fields,                           &
-                            modeldb%model_data%radiation_fields,      &
+                            radiation_fields,                         &
                             microphysics_fields,                      &
                             electric_fields,                          &
                             orography_fields,                         &
@@ -454,7 +460,7 @@ subroutine create_model_data( modeldb,      &
                             chemistry_fields,                         &
                             aerosol_fields,                           &
                             stph_fields,                              &
-                            modeldb%model_data%lbc_fields,            &
+                            lbc_fields,                               &
                             model_axes )
 
     ! Create gungho prognostics and auxiliary (diagnostic) fields
@@ -485,7 +491,7 @@ subroutine create_model_data( modeldb,      &
       select case ( prognostic_init_choice )
         case ( init_option_fd_start_dump )
           call create_fd_prognostics(mesh, twod_mesh,       &
-                                     modeldb%model_data%fd_fields,  &
+                                     fd_fields,             &
                                      depository)
       end select
 
@@ -562,6 +568,7 @@ subroutine create_model_data( modeldb,      &
     type(field_collection_type), pointer :: cloud_fields
     type(field_collection_type), pointer :: aerosol_fields
 
+    type(field_collection_type),   pointer :: fd_fields
 
     type(gungho_time_axes_type), pointer :: model_axes
 
@@ -571,6 +578,8 @@ subroutine create_model_data( modeldb,      &
     type(field_collection_type), pointer :: moisture_fields => null()
     type(field_array_type), pointer      :: mr_array => null()
     type(field_array_type), pointer      :: moist_dyn_array => null()
+    type(field_collection_type), pointer :: lbc_fields
+    type(field_collection_type), pointer :: radiation_fields
 
 #ifdef UM_PHYSICS
     procedure(regridder), pointer :: regrid_operation => null()
@@ -596,6 +605,9 @@ subroutine create_model_data( modeldb,      &
     derived_fields => modeldb%fields%get_field_collection("derived_fields")
     cloud_fields => modeldb%fields%get_field_collection("cloud_fields")
     aerosol_fields => modeldb%fields%get_field_collection("aerosol_fields")
+    lbc_fields => modeldb%fields%get_field_collection("lbc_fields")
+    radiation_fields => modeldb%fields%get_field_collection("radiation_fields")
+    fd_fields => modeldb%fields%get_field_collection("fd_fields")
 
     ! Get model_axes out of modeldb
     model_axes => get_time_axes_from_collection(modeldb%values, "model_axes" )
@@ -608,7 +620,7 @@ subroutine create_model_data( modeldb,      &
     ! Initialise all the physics fields here. We'll then re initialise
     ! them below if need be
     if (use_physics) then
-          call init_physics_prognostics_alg( modeldb%model_data%radiation_fields,    &
+          call init_physics_prognostics_alg( radiation_fields,                       &
                                              microphysics_fields,                    &
                                              electric_fields,                        &
                                              orography_fields,                       &
@@ -675,23 +687,22 @@ subroutine create_model_data( modeldb,      &
           ! Initialise FD prognostic fields from a UM2LFRic dump
 
           ! Read in from a UM2LFRic dump file
-          call init_fd_prognostics_dump( modeldb%model_data%fd_fields )
+          call init_fd_prognostics_dump( fd_fields )
 
           ! Populate prognostics from input finite difference fields
           call map_fd_to_prognostics( modeldb%configuration,                &
                                       prognostic_fields,                    &
                                       mr_array%bundle,                      &
                                       moist_dyn_array%bundle,               &
-                                      modeldb%model_data%fd_fields )
-
+                                      fd_fields )
           ! Transform UM 2-bin dust to UKCA LFRIC 2-mode dust
 #ifdef UM_PHYSICS
           if ( aerosol == aerosol_um .and. &
                glomap_mode == glomap_mode_dust_and_clim ) then
 
             ! Load UM dust fields
-            call modeldb%model_data%fd_fields%get_field('dust1_mmr', dust1_mmr)
-            call modeldb%model_data%fd_fields%get_field('dust2_mmr', dust2_mmr)
+            call fd_fields%get_field('dust1_mmr', dust1_mmr)
+            call fd_fields%get_field('dust2_mmr', dust2_mmr)
             ! Load LFRIC dust fields
             call aerosol_fields%get_field('n_acc_ins', n_acc_ins)
             call aerosol_fields%get_field('acc_ins_du', acc_ins_du)
@@ -732,20 +743,20 @@ subroutine create_model_data( modeldb,      &
 
       select case( lbc_option )
         case ( lbc_option_analytic )
-          call init_lbcs_analytic_alg( prognostic_fields,             &
-                                       modeldb%model_data%lbc_fields )
+          call init_lbcs_analytic_alg( prognostic_fields,     &
+                                       lbc_fields )
 
         case ( lbc_option_gungho_file )
           call init_lbcs_file_alg( modeldb%configuration,     &
                                    model_axes%lbc_times_list, &
                                    modeldb%clock,             &
-                                   modeldb%model_data%lbc_fields )
+                                   lbc_fields )
 
         case ( lbc_option_um2lfric_file )
           call init_lbcs_file_alg( modeldb%configuration,     &
                                    model_axes%lbc_times_list, &
                                    modeldb%clock,             &
-                                   modeldb%model_data%lbc_fields )
+                                   lbc_fields )
 
         case ( lbc_option_none )
           call log_event( "Gungho: No LBC option specified, yet limited area", LOG_LEVEL_ERROR )
@@ -788,7 +799,7 @@ subroutine create_model_data( modeldb,      &
           call log_event( "Gungho: Ancillaries are being read from start dump ", LOG_LEVEL_INFO )
           ! Update the tiled surface temperature with the calculated tstar
           call update_tstar_alg(surface_fields,                           &
-                                modeldb%model_data%fd_fields, put_field=.true. )
+                                fd_fields, put_field=.true. )
         case ( ancil_option_fixed, ancil_option_updating )
           call init_variable_fields( model_axes%ancil_times_list,         &
                                      modeldb%clock,                       &
@@ -801,31 +812,31 @@ subroutine create_model_data( modeldb,      &
                  call read_state( ancil_fields )
             end if
             call process_inputs_alg( ancil_fields,                      &
-                                     modeldb%model_data%fd_fields,      &
+                                                        fd_fields,      &
                                      surface_fields,                    &
                                      soil_fields,                       &
                                      snow_fields,                       &
-                                     modeldb%model_data%radiation_fields )
+                                     radiation_fields )
 
             ! Free up any prognostics not required
             if (init_option == init_option_fd_start_dump) then
-              call modeldb%model_data%fd_fields%remove_field("can_water_in")
+              call fd_fields%remove_field("can_water_in")
               call depository%remove_field("can_water_in")
-              call modeldb%model_data%fd_fields%remove_field("land_tile_temp")
+              call fd_fields%remove_field("land_tile_temp")
               call depository%remove_field("land_tile_temp")
-              call modeldb%model_data%fd_fields%remove_field("tstar_sea_ice")
+              call fd_fields%remove_field("tstar_sea_ice")
               call depository%remove_field("tstar_sea_ice")
-              call modeldb%model_data%fd_fields%remove_field("tile_snow_mass_in")
+              call fd_fields%remove_field("tile_snow_mass_in")
               call depository%remove_field("tile_snow_mass_in")
-              call modeldb%model_data%fd_fields%remove_field("n_snow_layers_in")
+              call fd_fields%remove_field("n_snow_layers_in")
               call depository%remove_field("n_snow_layers_in")
-              call modeldb%model_data%fd_fields%remove_field("snow_depth_in")
+              call fd_fields%remove_field("snow_depth_in")
               call depository%remove_field("snow_depth_in")
-              call modeldb%model_data%fd_fields%remove_field("tile_snow_rgrain_in")
+              call fd_fields%remove_field("tile_snow_rgrain_in")
               call depository%remove_field("tile_snow_rgrain_in")
-              call modeldb%model_data%fd_fields%remove_field("snow_under_canopy_in")
+              call fd_fields%remove_field("snow_under_canopy_in")
               call depository%remove_field("snow_under_canopy_in")
-              call modeldb%model_data%fd_fields%remove_field("snowpack_density_in")
+              call fd_fields%remove_field("snowpack_density_in")
               call depository%remove_field("snowpack_density_in")
             end if
 
@@ -910,13 +921,13 @@ subroutine create_model_data( modeldb,      &
 
     type( modeldb_type ), intent(inout), target :: modeldb
 
-    type( field_collection_type ), pointer :: fd_fields => null()
+    type( field_collection_type ), pointer :: fd_fields
     type( field_collection_type ), pointer :: prognostic_fields
 
     type( io_value_type ), pointer :: temp_corr_io_value
 
     ! Get pointers to field collections for use downstream
-    fd_fields => modeldb%model_data%fd_fields
+    fd_fields => modeldb%fields%get_field_collection("fd_fields")
     prognostic_fields => modeldb%fields%get_field_collection("prognostic_fields")
 
     temp_corr_io_value => get_io_value(modeldb%values, 'temperature_correction_io_value')
@@ -981,6 +992,10 @@ subroutine create_model_data( modeldb,      &
       type(field_collection_type), pointer :: derived_fields
       type(field_collection_type), pointer :: cloud_fields
       type(field_collection_type), pointer :: aerosol_fields
+      type(field_collection_type), pointer :: lbc_fields
+      type(field_collection_type), pointer :: radiation_fields
+      type(field_collection_type), pointer :: ls_fields
+      type(field_collection_type), pointer :: fd_fields
 
       depository => modeldb%fields%get_field_collection("depository")
       prognostic_fields => modeldb%fields%get_field_collection("prognostic_fields")
@@ -1002,6 +1017,9 @@ subroutine create_model_data( modeldb,      &
       derived_fields => modeldb%fields%get_field_collection("derived_fields")
       cloud_fields => modeldb%fields%get_field_collection("cloud_fields")
       aerosol_fields => modeldb%fields%get_field_collection("aerosol_fields")
+      radiation_fields => modeldb%fields%get_field_collection("radiation_fields")
+      ls_fields => modeldb%fields%get_field_collection("ls_fields")
+      fd_fields => modeldb%fields%get_field_collection("fd_fields")
 
       ! Clear all the fields in each field collection
       call depository%clear()
@@ -1012,7 +1030,7 @@ subroutine create_model_data( modeldb,      &
       call con_tracer_last_outer%clear()
       call con_tracer_all_outer%clear()
       call derived_fields%clear()
-      call modeldb%model_data%radiation_fields%clear()
+      call radiation_fields%clear()
       call microphysics_fields%clear()
       call electric_fields%clear()
       call orography_fields%clear()
@@ -1025,7 +1043,7 @@ subroutine create_model_data( modeldb,      &
       call chemistry_fields%clear()
       call aerosol_fields%clear()
       call stph_fields%clear()
-      call modeldb%model_data%fd_fields%clear()
+      call fd_fields%clear()
 #ifdef COUPLED
       if(l_esm_couple) then
          cpl_snd_2d => modeldb%fields%get_field_collection("cpl_snd_2d")
@@ -1047,8 +1065,9 @@ subroutine create_model_data( modeldb,      &
         call field_collection_ptr%clear()
       end if
 
-      call modeldb%model_data%lbc_fields%clear()
-      call modeldb%model_data%ls_fields%clear()
+      lbc_fields => modeldb%fields%get_field_collection("lbc_fields")
+      call lbc_fields%clear()
+      call ls_fields%clear()
 
       moisture_fields => modeldb%fields%get_field_collection("moisture_fields")
       call moisture_fields%clear()

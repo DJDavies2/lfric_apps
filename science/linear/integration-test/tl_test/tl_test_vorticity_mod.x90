@@ -63,7 +63,7 @@ module tl_test_vorticity_mod
     character(str_def) :: label = "vorticity_advection"
 
     type(field_collection_type ), pointer :: prognostic_fields => null()
-    type(field_collection_type ), pointer :: ls_fields => null()
+    type(field_collection_type ), pointer :: ls_fields
 
     type( quadrature_xyoz_type ), pointer :: qr => null()
     type( field_type ),  pointer :: chi(:) => null()
@@ -103,7 +103,7 @@ module tl_test_vorticity_mod
 
     prognostic_fields => modeldb%fields%get_field_collection(&
                                           "prognostic_fields")
-    ls_fields         => modeldb%model_data%ls_fields
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
 
     ! Input
     call prognostic_fields%get_field('u', n_u)

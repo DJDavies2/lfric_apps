@@ -70,7 +70,7 @@ module linear_step_mod
     type( field_type ),            pointer :: mr(:) => null()
     type( field_type ),            pointer :: moist_dyn(:) => null()
     type( field_collection_type ), pointer :: derived_fields
-    type( field_collection_type ), pointer :: ls_fields => null()
+    type( field_collection_type ), pointer :: ls_fields
     type( field_type ),            pointer :: ls_mr(:) => null()
     type( field_type ),            pointer :: ls_moist_dyn(:) => null()
 
@@ -108,7 +108,7 @@ module linear_step_mod
     moist_dyn => moist_dyn_array%bundle
     derived_fields => modeldb%fields%get_field_collection("derived_fields")
 
-    ls_fields => modeldb%model_data%ls_fields
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
     call moisture_fields%get_field("ls_mr", ls_mr_array)
     call moisture_fields%get_field("ls_moist_dyn", ls_moist_dyn_array)
     ls_mr => ls_mr_array%bundle

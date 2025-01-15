@@ -63,7 +63,7 @@ module tl_test_pressure_grad_bd_mod
    character(str_def) :: label = "pressure gradient bd"
 
     type(field_collection_type ), pointer :: prognostic_fields => null()
-    type(field_collection_type ), pointer :: ls_fields => null()
+    type(field_collection_type ), pointer :: ls_fields
 
     class(reference_element_type), pointer :: reference_element =>null()
     type(quadrature_face_type)             :: qrf
@@ -109,7 +109,7 @@ module tl_test_pressure_grad_bd_mod
 
     prognostic_fields => modeldb%fields%get_field_collection( &
                                            "prognostic_fields")
-    ls_fields         => modeldb%model_data%ls_fields
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
 
     ! Input fields
     call prognostic_fields%get_field('theta', n_theta)

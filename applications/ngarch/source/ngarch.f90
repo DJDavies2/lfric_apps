@@ -28,9 +28,9 @@ program ngarch
   implicit none
 
   ! The technical and scientific state
-  type( modeldb_type )      :: modeldb
-  character(*), parameter   :: application_name = "ngarch"
-  character(:), allocatable :: filename
+  type( modeldb_type )        :: modeldb
+  character(*), parameter     :: application_name = "ngarch"
+  character(:), allocatable   :: filename
 
   call modeldb%configuration%initialise( application_name, table_len=10 )
   call modeldb%values%initialise( 'values', 5 )
@@ -42,6 +42,14 @@ program ngarch
                                                   table_len = 100 )
   call modeldb%fields%add_empty_field_collection( "diagnostic_fields", &
                                                   table_len = 100 )
+  call modeldb%fields%add_empty_field_collection("lbc_fields",         &
+                                                  table_len = 100)
+  call modeldb%fields%add_empty_field_collection("radiation_fields",   &
+                                                  table_len = 100)
+  call modeldb%fields%add_empty_field_collection("ls_fields",          &
+                                                  table_len = 100)
+  call modeldb%fields%add_empty_field_collection("fd_fields",          &
+                                                  table_len = 100)
 
   call modeldb%io_contexts%initialise(application_name, 100)
 

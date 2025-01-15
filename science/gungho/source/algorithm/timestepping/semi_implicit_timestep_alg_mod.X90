@@ -305,6 +305,8 @@ contains
     dt = real(model_clock%get_seconds_per_step(), r_def)
 
     moisture_fields => modeldb%fields%get_field_collection("moisture_fields")
+    lbc_fields => modeldb%fields%get_field_collection("lbc_fields")
+    radiation_fields => modeldb%fields%get_field_collection("radiation_fields")
     call moisture_fields%get_field("mr", mr_array)
     mr => mr_array%bundle
     call moisture_fields%get_field("moist_dyn", moist_dyn_array)
@@ -319,7 +321,6 @@ contains
     con_tracer_all_outer => modeldb%fields%get_field_collection("con_tracer_all_outer")
     con_tracer_last_outer => modeldb%fields%get_field_collection("con_tracer_last_outer")
     derived_fields => modeldb%fields%get_field_collection("derived_fields")
-    radiation_fields => model_data%radiation_fields
     microphysics_fields => modeldb%fields%get_field_collection("microphysics_fields")
     turbulence_fields => modeldb%fields%get_field_collection("turbulence_fields")
     convection_fields => modeldb%fields%get_field_collection("convection_fields")
@@ -330,7 +331,6 @@ contains
     chemistry_fields => modeldb%fields%get_field_collection("chemistry_fields")
     aerosol_fields => modeldb%fields%get_field_collection("aerosol_fields")
     stph_fields => modeldb%fields%get_field_collection("stph_fields")
-    lbc_fields => model_data%lbc_fields
     electric_fields => modeldb%fields%get_field_collection("electric_fields")
     orography_fields => modeldb%fields%get_field_collection("orography_fields")
 
@@ -583,6 +583,7 @@ contains
 
     type(semi_implicit_timestep_type), intent(inout), target :: self
     type(modeldb_type), intent(in), target  :: modeldb
+
 
     ! Prognostic fields
     type( field_type ), intent( inout ) :: u, rho, theta, exner

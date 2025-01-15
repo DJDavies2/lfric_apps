@@ -73,8 +73,8 @@ contains
                        LOG_LEVEL_ERROR )
     end if
 
+    ! Field collection created in linear_model.f90
     ! Create the field collection
-    call fd_field_collection%initialise( name="fd_prognostics", table_len=100 )
 
     tmp_read_ptr => read_field_generic
     tmp_write_ptr => write_field_generic

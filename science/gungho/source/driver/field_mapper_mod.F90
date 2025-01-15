@@ -224,13 +224,10 @@ contains
     ! Create collection of fields to be advected
 
 #ifdef UM_PHYSICS
-    call self%radiation%initialise(name='radiation_fields', table_len=100)
 #endif
    call gungho_axes%initialise()
-if (limited_area) then
-    call lbc_fields%initialise(name='lbc_fields', table_len=100)
-  end if
-end subroutine init
+
+  end subroutine init
 
   !> @brief Post-initialisation sanity check
   !> @param[in] self Field mapper object

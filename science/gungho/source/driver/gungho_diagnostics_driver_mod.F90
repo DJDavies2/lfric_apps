@@ -86,7 +86,7 @@ contains
 
     type( field_collection_type ), pointer :: prognostic_fields => null()
     type( field_collection_type ), pointer :: con_tracer_last_outer
-    type( field_collection_type ), pointer :: lbc_fields => null()
+    type( field_collection_type ), pointer :: lbc_fields
     type( field_collection_type ), pointer :: moisture_fields => null()
     type( field_type ),            pointer :: mr(:) => null()
     type( field_type ),            pointer :: moist_dyn(:) => null()
@@ -140,7 +140,7 @@ contains
 
     ! Get pointers to field collections for use downstream
     prognostic_fields => modeldb%fields%get_field_collection("prognostic_fields")
-    lbc_fields => modeldb%model_data%lbc_fields
+    lbc_fields => modeldb%fields%get_field_collection("lbc_fields")
     moisture_fields => modeldb%fields%get_field_collection("moisture_fields")
     call moisture_fields%get_field("mr", mr_array)
     mr => mr_array%bundle

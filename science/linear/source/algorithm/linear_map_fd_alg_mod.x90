@@ -60,7 +60,7 @@ contains
     type( field_type ),          pointer :: exner             => null()
 
     ! Fields from start-dump
-    type(field_collection_type), pointer :: fd_fields             => null()
+    type(field_collection_type), pointer :: fd_fields
     type( field_type ),          pointer :: h_wind_in_w2h         => null()
     type( field_type ),          pointer :: ew_wind_in_w3         => null()
     type( field_type ),          pointer :: ns_wind_in_w3         => null()
@@ -86,7 +86,7 @@ contains
     call moisture_fields%get_field("moist_dyn", moist_dyn_array)
     mr => mr_array%bundle
     moist_dyn => moist_dyn_array%bundle
-    fd_fields => modeldb%model_data%fd_fields
+    fd_fields => modeldb%fields%get_field_collection("fd_fields")
 
     ! FD (source) fields
     if ( read_w2h_wind ) then

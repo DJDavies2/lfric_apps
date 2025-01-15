@@ -244,6 +244,8 @@ contains
     type( field_collection_type ), pointer :: depository => null()
 #endif
 
+    type( field_collection_type ), pointer :: lbc_fields
+
     type(gungho_time_axes_type), pointer :: model_axes
 
 #ifdef UM_PHYSICS
@@ -287,6 +289,8 @@ contains
     end if
 #endif
 
+    lbc_fields => modeldb%fields%get_field_collection("lbc_fields")
+
 #ifdef COUPLED
     if(l_esm_couple) then
 
@@ -311,7 +315,7 @@ contains
 
       call update_lbcs_file_alg( modeldb%configuration,     &
                                  model_axes%lbc_times_list, &
-                                 modeldb%clock, modeldb%model_data%lbc_fields )
+                                 modeldb%clock, lbc_fields )
     endif
 
 #ifdef UM_PHYSICS

@@ -22,20 +22,10 @@ module gungho_model_data_mod
 
     !> @name Fields needed to time-step the model.
     !> @{
-    !> LBC fields - lateral boundary conditions to run a limited area model
-    type( field_collection_type ), public   :: lbc_fields
-    !> Fields owned by the radiation scheme
-    type( field_collection_type ), public   :: radiation_fields
     !> @}
-
-    !> FD fields used to read initial conditions from LFRic-Input files
-    type( field_collection_type ), public   :: fd_fields
 
     !> Fields used to store data read in from ancillary files
     type( field_collection_type ), public   :: ancil_fields
-
-    !> Fields for the tangent linear linearisation state
-    type( field_collection_type ), public   :: ls_fields
 
     contains
 

@@ -19,7 +19,6 @@ use illuminate_kernel_mod,   only: illuminate_kernel_type
 use io_config_mod,           only: subroutine_timers
 use timer_mod,               only: timer
 
-
 implicit none
 private
 

@@ -91,6 +91,7 @@ contains
 
     type( io_value_type ) :: temp_corr_io_value
     type( field_collection_type ), pointer :: depository
+    type( field_collection_type ), pointer :: fd_fields
 
     character(len=*), parameter :: io_context_name = "gungho_atm"
 
@@ -98,6 +99,7 @@ contains
     nullify( base_mesh_nml, multires_coupling_nml, initialization_nml )
 
     depository => modeldb%fields%get_field_collection("depository")
+    fd_fields => modeldb%fields%get_field_collection("fd_fields")
 
     call temp_corr_io_value%init('temperature_correction_rate', [0.0_r_def])
     call modeldb%values%add_key_value( 'temperature_correction_io_value', &
@@ -151,8 +153,8 @@ contains
     ! Instantiate the fields required to read the initial
     ! conditions from a file.
     if ( init_option == init_option_fd_start_dump ) then
-      call create_tl_prognostics( mesh, twod_mesh,              &
-                                  modeldb%model_data%fd_fields, &
+      call create_tl_prognostics( mesh, twod_mesh,   &
+                                  fd_fields,         &
                                   depository)
     end if
 
@@ -161,7 +163,7 @@ contains
 
     ! Initialise the fields stored in the model_data
     if ( init_option == init_option_fd_start_dump ) then
-      call init_fd_prognostics_dump( modeldb%model_data%fd_fields )
+      call init_fd_prognostics_dump( fd_fields )
     else
       call initialise_model_data( modeldb, mesh, twod_mesh )
     end if
@@ -203,6 +205,7 @@ contains
     type(modeldb_type), intent(inout) :: modeldb
 
     type(field_collection_type), pointer :: moisture_fields
+    type(field_collection_type), pointer :: ls_fields
     type(field_array_type), pointer      :: ls_mr_array
     type(field_array_type), pointer      :: ls_moist_dyn_array
 
@@ -228,6 +231,8 @@ contains
     call moisture_fields%get_field("ls_mr", ls_mr_array)
     call moisture_fields%get_field("ls_moist_dyn", ls_moist_dyn_array)
 
+    ls_fields => modeldb%fields%get_field_collection("ls_fields")
+
     ! Get initialization configuration
     initialization_nml => modeldb%configuration%get_namelist('initialization')
     call initialization_nml%get_value( 'ls_option', ls_option )
@@ -235,7 +240,7 @@ contains
     if ( ls_option == ls_option_file ) then
       call update_ls_file_alg( model_axes%ls_times_list,     &
                                modeldb%clock,                &
-                               modeldb%model_data%ls_fields, &
+                               ls_fields,                    &
                                ls_mr_array%bundle,           &
                                ls_moist_dyn_array%bundle )
     end if

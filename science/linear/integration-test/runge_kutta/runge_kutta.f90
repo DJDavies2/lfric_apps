@@ -36,7 +36,6 @@ program runge_kutta
 
   ! Model run working data set
   type(modeldb_type) :: modeldb
-
   character(*), parameter :: application_name = "runge_kutta"
 
   character(:), allocatable :: filename
@@ -75,6 +74,12 @@ program runge_kutta
   call modeldb%fields%add_empty_field_collection("prognostic_fields", &
                                                   table_len = 100)
   call modeldb%fields%add_empty_field_collection("diagnostic_fields", &
+                                                  table_len = 100)
+  call modeldb%fields%add_empty_field_collection("lbc_fields",        &
+                                                  table_len = 100)
+  call modeldb%fields%add_empty_field_collection("radiation_fields",  &
+                                                  table_len = 100)
+  call modeldb%fields%add_empty_field_collection("fd_fields",         &
                                                   table_len = 100)
 
   call modeldb%io_contexts%initialise(program_name, 100)

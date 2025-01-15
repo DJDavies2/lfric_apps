@@ -379,6 +379,9 @@ contains
 
     character(str_def), allocatable :: meshes_to_check(:)
 
+#ifdef UM_PHYSICS
+    type(field_collection_type),  pointer :: radiation_fields
+#endif
     integer :: start_index, end_index
 
     character(str_def) :: prime_mesh_name
@@ -788,13 +791,12 @@ contains
 
 #ifdef UM_PHYSICS
     if ( use_physics ) then
-
       ! Initialise time-varying trace gases
       call gas_calc_all()
-
       if (radiation == radiation_socrates) then
         ! Initialisation for the Socrates radiation scheme
-        call illuminate_alg( modeldb%model_data%radiation_fields, &
+        radiation_fields => modeldb%fields%get_field_collection("radiation_fields")
+        call illuminate_alg( radiation_fields,                    &
                              modeldb%clock%get_step(),            &
                              modeldb%clock%get_seconds_per_step())
       end if
@@ -979,7 +981,7 @@ contains
     type( field_collection_type ), pointer :: moisture_fields => null()
     type( field_array_type ),      pointer :: mr_array
     type( field_type ),            pointer :: mr(:) => null()
-    type( field_collection_type ), pointer :: fd_fields => null()
+    type( field_collection_type ), pointer :: fd_fields
     type( field_collection_type ), pointer :: prognostic_fields => null()
 
     type( field_type), pointer :: theta => null()
@@ -1001,7 +1003,7 @@ contains
       moisture_fields => modeldb%fields%get_field_collection("moisture_fields")
       call moisture_fields%get_field("mr", mr_array)
       mr => mr_array%bundle
-      fd_fields => modeldb%model_data%fd_fields
+      fd_fields => modeldb%fields%get_field_collection("fd_fields")
 
       ! Get pointers to fields in the prognostic/diagnostic field collections
       ! for use downstream

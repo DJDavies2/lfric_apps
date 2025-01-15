@@ -28,7 +28,7 @@ contains
   !> @details Initialise FD prognostic fields
   !>          from UM2LFric dump (checkpoint format)
   !> @param[in,out] fd_field_collection The collection of FD fields
-  subroutine init_fd_prognostics_dump( fd_field_collection)
+  subroutine init_fd_prognostics_dump( fd_field_collection )
 
     implicit none
 
