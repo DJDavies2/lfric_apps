@@ -82,6 +82,7 @@ si_pressure_maximum_iterations=400,
 si_pressure_tolerance=1.0e-4,
 /
 &idealised
+perturb_init=.false.
 f_lon_deg=0.0,
 test='deep_baroclinic_wave',
 /

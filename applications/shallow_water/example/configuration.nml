@@ -105,7 +105,7 @@ momentum_form   = 'vector_invariant'
 time_scheme='semi_implicit'
                  ! Choose between 'semi_implicit' (standard SI), 'ssprk3'
 		 ! (explicit RK-SSP3), or 'rk4' (Explicit RK4)
-                 ! Note that for 'explicit you must change runge_kutta_method='forward_euler'
+                 ! Note that for explicit you must change runge_kutta_method='forward_euler'
                  ! in the transport namelist.
 swe_test        = 'swe_gaussian_hill'
                  ! choose from swe_geostr_imbalance   (planar sin wave)
@@ -306,6 +306,7 @@ si_pressure_tolerance = 1.0e-4,
 /
 
 &idealised
+perturb_init=.false.
 test = 'none'
         ! The initial conditions are set in shallow_water_settings
 /

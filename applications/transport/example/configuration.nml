@@ -154,6 +154,7 @@ rd=287.05
 scaling_factor=1.0
 /
 &idealised
+perturb_init=.false.
 test='cosine_hill',
 /
 &formulation

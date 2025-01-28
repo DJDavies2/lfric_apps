@@ -22,7 +22,10 @@ module gungho_init_prognostics_driver_mod
   use idealised_config_mod,             only: test,                    &
                                               test_specified_profiles, &
                                               test_bryan_fritsch,      &
-                                              test_grabowski_clark
+                                              test_grabowski_clark,    &
+                                              perturb_init,            &
+                                              perturb_magnitude
+  use random_perturb_field_alg_mod,     only: random_perturb_field
   use sci_field_bundle_builtins_mod,    only: set_bundle_scalar
   use field_mod,                        only: field_type
   use field_collection_mod,             only: field_collection_type
@@ -88,10 +91,16 @@ contains
       call init_rho_field( rho, theta, exner, moist_dyn, initial_time )
     end if
 
-    if (test == test_grabowski_clark) then
+    if ( test == test_grabowski_clark ) then
       call init_unsaturated_profile_alg( theta, mr, exner, rho, moist_dyn )
     else if (test /= test_bryan_fritsch .and. test /= test_specified_profiles) then
       call init_mr_fields( mr, theta, exner, rho, moist_dyn )
+    end if
+
+    if ( perturb_init ) then
+      call log_event( "Gungho: Applying initial perturbation to theta",         &
+                      LOG_LEVEL_INFO )
+      call random_perturb_field(theta, perturb_magnitude)
     end if
 
     call log_event( "Gungho: Initialised prognostic fields", LOG_LEVEL_INFO )

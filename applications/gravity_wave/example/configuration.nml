@@ -105,6 +105,10 @@ write_fluxes = .false.
 write_minmax_tseries = .false.
 /
 
+&idealised
+perturb_init=.false.
+/
+
 &logging
 run_log_level = 'info'
 /

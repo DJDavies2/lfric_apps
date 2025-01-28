@@ -87,6 +87,9 @@ si_pressure_maximum_iterations=400,
 si_pressure_tolerance=1.0e-6,
 /
 &idealised
+perturb_init=.false.
+perturb_magnitude=0
+perturb_seed=0
 test='cold_bubble_y',
 /
 &initialization

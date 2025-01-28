@@ -178,3 +178,22 @@ class vn20_t467(MacroUpgrade):
         self.add_setting(config, [nml, "l_proc_fluxes"], ".false.")
 
         return config, self.reports
+
+
+class vn20_t339(MacroUpgrade):
+    """Upgrade macro for ticket #339 by Joshua Dendy."""
+
+    BEFORE_TAG = "vn2.0_t467"
+    AFTER_TAG = "vn2.0_t339"
+
+    def upgrade(self, config, meta_config=None):
+        # Commands From: science/gungho/rose-meta/lfric-gungho
+        self.add_setting(
+            config, ["namelist:idealised", "perturb_init"], ".false."
+        )
+        self.add_setting(
+            config, ["namelist:idealised", "perturb_magnitude"], "0"
+        )
+        self.add_setting(config, ["namelist:idealised", "perturb_seed"], "0")
+
+        return config, self.reports

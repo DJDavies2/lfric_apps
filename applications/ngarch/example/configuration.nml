@@ -149,6 +149,7 @@ si_pressure_tolerance=1.0e-4,
 /
 &idealised
 f_lon_deg=300.0,
+perturb_init=.false.
 test='specified_profiles',
 /
 &ideal_surface

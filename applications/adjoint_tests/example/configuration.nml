@@ -83,6 +83,7 @@ si_pressure_tolerance=1.0e-6,
 /
 &idealised
 f_lon_deg=0,
+perturb_init=.false.
 test='gravity_wave',
 /
 &ideal_surface

@@ -97,6 +97,7 @@ si_pressure_maximum_iterations=400,
 si_pressure_tolerance=1.0e-6,
 /
 &idealised
+perturb_init=.false.
 test='dry_cbl',
 /
 &initialization

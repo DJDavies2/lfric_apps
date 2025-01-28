@@ -83,6 +83,7 @@ module gungho_model_mod
                                   only : semi_implicit_timestep_type
   use setup_orography_alg_mod,    only : setup_orography_alg
   use derived_config_mod,         only : l_esm_couple
+  use idealised_config_mod,       only : perturb_init, perturb_seed
 #ifdef COUPLED
   use coupler_mod,                only : create_coupling_fields, &
                                          generate_coupling_field_collections
@@ -413,6 +414,9 @@ contains
 
 
     integer(i_def), parameter :: one_layer = 1_i_def
+
+    integer(i_def) :: random_seed_size, proc_rank, big_int
+    integer(i_def), allocatable :: ranseed(:)
 
     !=======================================================================
     ! 0.0 Extract configuration variables
@@ -818,6 +822,35 @@ contains
 
     end if
 #endif
+
+    if ( perturb_init ) then
+
+      if ( perturb_seed == 0 ) then
+        call log_event("Gungho: Perturbation seed is zero", &
+                       LOG_LEVEL_ERROR)
+      end if
+
+      ! Get length of random seed array required by the compiler
+      call RANDOM_SEED(size = random_seed_size)
+      allocate(ranseed(random_seed_size))
+
+      ! Get processor rank for unique seed on each processor
+      proc_rank = modeldb%mpi%get_comm_rank()
+
+      ! Pick large number to multiply by proc_rank
+      big_int = 1234567
+
+      ! Allocate random seed across array with some added entropy from
+      ! big_int and array index
+      do i = 1, random_seed_size - 1
+        ranseed(i) = i*perturb_seed + proc_rank*big_int
+      end do
+
+      ! Set seed
+      call RANDOM_SEED(PUT = ranseed)
+    end if
+
+
 
     !=======================================================================
     ! Housekeeping
