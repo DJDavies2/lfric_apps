@@ -97,8 +97,10 @@ create_rose-meta: rose-meta/$(PROJECT_NAME)/HEAD/rose-meta.conf
 rose-meta/$(PROJECT_NAME)/HEAD/rose-meta.conf:
 	$(call MESSAGE, Creating, $@)
 	$(Q)mkdir -p $(dir $@)
-	${Q}for meta_file in ./rose-meta/* ; \
-	      do echo import\=$${meta_file##*/}/${META_VN} >> $@ ; \
+	${Q}for meta_file in ./rose-meta/* ; do \
+		  if [[ $${meta_file} != *$(PROJECT_NAME)* ]]; then \
+	        echo import\=$${meta_file##*/}/${META_VN} >> $@ ; \
+		  fi \
 	    done
 
 
