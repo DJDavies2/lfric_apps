@@ -477,3 +477,40 @@ class vn20_t472(MacroUpgrade):
         self.add_setting(config, [nml, "sc_diag_opt"], sc_diag_opt)
 
         return config, self.reports
+
+
+class vn20_t84(MacroUpgrade):
+    """Upgrade macro for ticket #84 by Chris Smith."""
+
+    BEFORE_TAG = "vn2.0_t472"
+    AFTER_TAG = "vn2.0_t84"
+
+    def upgrade(self, config, meta_config=None):
+        # Commands From: rose-meta/lfric-gungho
+        """Add new wind_forcing namelist"""
+        source = self.get_setting_value(
+            config, ["file:configuration.nml", "source"]
+        )
+        source = source + "\n" + " (namelist:wind_forcing)"
+        self.change_setting_value(
+            config, ["file:configuration.nml", "source"], source
+        )
+        """Add default data for wind_forcing namelist"""
+        self.add_setting(config, ["namelist:wind_forcing"])
+        self.add_setting(
+            config, ["namelist:wind_forcing", "coordinate"], "'height'"
+        )
+        self.add_setting(config, ["namelist:wind_forcing", "heights"], "0.0")
+        self.add_setting(
+            config, ["namelist:wind_forcing", "number_heights"], "1"
+        )
+        self.add_setting(config, ["namelist:wind_forcing", "number_times"], "1")
+        self.add_setting(
+            config, ["namelist:wind_forcing", "profile_data_u"], "0.0"
+        )
+        self.add_setting(
+            config, ["namelist:wind_forcing", "profile_data_v"], "0.0"
+        )
+        self.add_setting(config, ["namelist:wind_forcing", "times"], "0.0")
+
+        return config, self.reports
