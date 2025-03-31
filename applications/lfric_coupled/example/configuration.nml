@@ -300,6 +300,7 @@ panel_yproc=1,
 /
 &physics
 blayer_placement='fast',
+configure_segments=.false.,
 heldsuarez_thermo_placement=0,
 heldsuarez_wind_placement=0,
 lowest_level='gradient',

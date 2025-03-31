@@ -1,10 +1,13 @@
 {% do LOG.debug("Entered site/ncas/groups/groups_lfric_atm.cylc") %}
 {% do site_groups.update({
     "lfric_atm_nwp_archer2": [
-        "lfric_atm_nwp_gal9_debug-C48_MG_ex_gnu_full-debug-64bit",
-        "lfric_atm_nwp_gal9_debug-C48_MG_ex_gnu_production-64bit",
-        "lfric_atm_nwp_gal9_perf-C192_MG_ex_gnu_production-64bit",
+        "lfric_atm_nwp_gal9-C48_MG_ex_gnu_full-debug-64bit",
+        "lfric_atm_nwp_gal9-C48_MG_ex_gnu_production-64bit",
+        "lfric_atm_nwp_gal9-C192_MG_ex_gnu_production-64bit",
         ],
+    "lfric_atm_nwp_quick": [
+        "lfric_atm_nwp_gal9-C48_MG_ex_gnu_full-debug-64bit",
+    ],
     "lfric_atm_c192": [
         "lfric_atm_nwp_gal9-C192_MG_ex_gnu_production-64bit-rbl32",
     ],

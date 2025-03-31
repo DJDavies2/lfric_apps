@@ -20,6 +20,11 @@
         "plot_str": "",
     }) %}
 
+{% elif task_ns.conf_name == "nwp_gal9-C48_MG" %}
+    {% do task_dict.update({
+        "plot_str": "",
+    }) %}
+
 {% elif task_ns.conf_name == "nwp_gal9-C224_MG" %}
 
     {% do task_dict.update({

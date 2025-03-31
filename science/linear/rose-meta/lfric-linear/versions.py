@@ -75,3 +75,19 @@ class vn21_t83(MacroUpgrade):
         self.add_setting(config, ["namelist:theta_relax", "timescale"], "1.0")
 
         return config, self.reports
+
+
+class vn21_t476(MacroUpgrade):
+    """Upgrade macro for ticket #476 by Dave Case."""
+
+    BEFORE_TAG = "vn2.1_t83"
+    AFTER_TAG = "vn2.1_t476"
+
+    def upgrade(self, config, meta_config=None):
+        # Commands From: rose-meta/lfric-gungho
+        """Set configure_segments in physics namelist to be false to ignore segmentation"""
+        self.add_setting(config, ["namelist:physics", "bl_segment"], "0")
+        self.add_setting(config, ["namelist:physics", "gw_segment"], "0")
+        self.add_setting(config, ["namelist:physics", "ussp_segment"], "0")
+
+        return config, self.reports

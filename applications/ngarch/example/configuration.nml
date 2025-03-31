@@ -453,6 +453,7 @@ partitioner='planar',
 /
 &physics
 blayer_placement='fast',
+configure_segments=.false.,
 convection_placement='fast',
 limit_drag_incs=.false.,
 lowest_level='gradient',

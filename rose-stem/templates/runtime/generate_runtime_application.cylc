@@ -3,8 +3,9 @@
 {# The file LICENCE, distributed with this code, contains details of the terms #}
 {# under which the code may be used. #}
 {# ########################################################################### #}
-{% do LOG.debug("Entered templates/runtime/generate_runtime_application.cylc") %}
+{% from "cylc.flow" import LOG %}
 
+{% do LOG.debug("Entered templates/runtime/generate_runtime_application.cylc") %}
 {# Generate the runtime section for application run tasks #}
 
 {# Define a family for this task #}

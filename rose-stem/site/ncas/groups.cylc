@@ -11,6 +11,7 @@
        "lfric_atm_nwp_archer2"
    ],
    "lfric_atm_nwp_archer2" : [],
+   "lfric_atm_nwp_quick" : [],
    }) %}
 
 {% include "site/ncas/groups/groups_lfric_atm.cylc" %}
