@@ -273,35 +273,49 @@ do ic = 1, n_points
   ! Mixed-phase cloud fraction
   ! = overlap between cf_liq and cf_ice
   ! = cf_liq + cf_ice - cf_bulk
-  frac_r(ic,i_mph) = ( cloudfracs(ic,i_frac_liq)                               &
-                     + cloudfracs(ic,i_frac_ice) )                             &
-                   - cloudfracs(ic,i_frac_bulk)
-
-  ! Due to rounding errors, it is possible for the above to
-  ! yield a mixed-phase fraction very slightly > the liquid or
-  ! ice cloud fraction, which should be impossible.
-  ! Check to remove such instances:
-  frac_r(ic,i_mph) = min( min( cloudfracs(ic,i_frac_liq),                      &
-                               cloudfracs(ic,i_frac_ice) ),                    &
-                          frac_r(ic,i_mph) )
+  ! To avoid cf_mph spuriously falling to zero due to rounding-error,
+  ! write this as either:
+  !   cf_mph = cf_liq - ( cf_bulk - cf_ice )
+  ! or
+  !   cf_mph = cf_ice - ( cf_bulk - cf_liq )
+  ! with the smaller of cf_liq, cf_ice outside the brackets.
+  ! This ensures that if the larger one equals cf_bulk, it correctly cancels
+  ! it leaving cf_mph equal to the smaller one.  Otherwise the smaller one
+  ! can get wiped-out by rounding-error when added to the larger one,
+  ! wrongly leaving zero residual when cf_bulk is subtracted.
+  ! This formula also avoids cf_mph > cf_liq or cf_ice due to rounding error.
+  frac_r(ic,i_mph) = max(                                                      &
+        min( cloudfracs(ic,i_frac_liq), cloudfracs(ic,i_frac_ice) )            &
+    - ( cloudfracs(ic,i_frac_bulk)                                             &
+      - max( cloudfracs(ic,i_frac_liq), cloudfracs(ic,i_frac_ice) ) ),         &
+                          zero )
+  ! Still need to limit to avoid negative values due to rounding-error.
 
   ! Liquid-only cloud fraction
   ! = part of liquid cloud that is not mixed-phase
   ! = cf_liq - f_mph
-  ! = cf_bulk - cf_ice
-  frac_r(ic,i_liq) = cloudfracs(ic,i_frac_bulk)                                &
-                   - cloudfracs(ic,i_frac_ice)
+  frac_r(ic,i_liq) = cloudfracs(ic,i_frac_liq) - frac_r(ic,i_mph)
 
   ! Ice / rain but no liquid cloud fraction
   ! = area containing ice or rain but no liquid cloud
-  ! = max( cf_bulk, cf_precip ) - cf_liq
-  frac_r(ic,i_icr) = max( cloudfracs(ic,i_frac_bulk),                          &
-                          cloudfracs(ic,i_frac_precip) )                       &
-                   - cloudfracs(ic,i_frac_liq)
+  ! = max( cf_ice - cf_mph, cf_precip - cf_liq )
+  frac_r(ic,i_icr) = max(                                                      &
+      cloudfracs(ic,i_frac_ice) - frac_r(ic,i_mph),                            &
+      cloudfracs(ic,i_frac_precip) - cloudfracs(ic,i_frac_liq)                 &
+                        )
 
   ! Clear-sky fraction = any space remaining
   frac_r(ic,i_dry) = one - ( frac_r(ic,i_liq) + frac_r(ic,i_mph)               &
                            + frac_r(ic,i_icr) )
+end do
+
+do ic = 1, n_points
+  ! Remove spurious not-quite-zero values of frac_dry due to rounding-errors
+  ! (frac_dry should be exactly 0 if either cloud or precip fraction is 1)
+  if ( .not. ( cloudfracs(ic,i_frac_bulk) < one .and.                          &
+               cloudfracs(ic,i_frac_precip) < one ) ) then
+    frac_r(ic,i_dry) = zero
+  end if
 end do
 
 

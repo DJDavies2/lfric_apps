@@ -20,7 +20,8 @@ contains
 ! the compensating subsidence from the non-detrained parcel (and so
 ! depends on the detrainment rate...)
 subroutine set_det( n_points, n_fields_tot, n_points_mean, n_points_core,      &
-                    max_buoy_heights, n_buoy_vars, l_down, l_last_level,       &
+                    max_buoy_heights, n_buoy_vars,                             &
+                    l_down, l_last_level, l_to_full_level,                     &
                     cmpr, k, draft_string,                                     &
                     buoyancy_super, i_next,                                    &
                     delta_tv_k, core_mean_ratio,                               &
@@ -68,6 +69,10 @@ logical, intent(in) :: l_down
 ! level (top model-level for updrafts, bottom model-level for
 ! downdrafts); all mass is forced to detrain if this is true
 logical, intent(in) :: l_last_level
+
+! Flag for half-level ascent from half-level to full-level
+! (as opposed to full-level to half-level)
+logical, intent(in) :: l_to_full_level
 
 ! Stuff used to make error messages more informative:
 ! Structure storing compression indices of the current points
@@ -159,6 +164,9 @@ character(len=name_length) :: where_string
 character(len=name_length) :: field_name
 ! Flag for checking positivity (input to bad value checker)
 logical :: l_positive
+
+! Numerical tolerance used in safety-check to avoid negative values
+real(kind=real_cvprec) :: tolerance
 
 ! Numerical tolerance for triggering iterative detrainment calculation
 real(kind=real_cvprec), parameter :: safety_thresh                             &
@@ -586,12 +594,27 @@ if ( l_par_core ) then
         !
         ! ( phi_core - phi_mean ) <= (p+1) phi_mean
 
+        ! Set a numerical tolerance to avoid still getting negative edge
+        ! values due to rounding errors in the subsequent calculations.
+        tolerance = safety_thresh
+        ! Note safety_thresh is set assuming the precision of the variables
+        ! scales with epsilon (min_delta) times the value.  However, some
+        ! compilers allow values less than tiny (min_float) to be stored
+        ! with lower precision than this.  Therefore, if the value of the
+        ! field is less than min_float (but not zero), we need to scale the
+        ! tolerance up in this check.
+        if ( par_next_mean_fields(ic,i_field) < min_float .and.                &
+             par_next_mean_fields(ic,i_field) > zero ) then
+          tolerance = min( tolerance * ( min_float                             &
+                                       / par_next_mean_fields(ic,i_field) ),   &
+                           one )
+        end if
+
+        ! Apply limit to phi_core - phi_mean, with numerical tolerance
         core_m_mean(ic) = min( core_m_mean(ic),                                &
                                par_next_mean_fields(ic,i_field)                &
-                               * (power(ic)+one) * (one - safety_thresh) )
-        ! Factor 1-safety_thresh is a numerical tolerance to avoid still
-        ! getting negative edge values due to rounding errors in the
-        ! subsequent calculations.
+                               * (power(ic)+one) * (one-tolerance) )
+
       end do
     end if  ! ( field_positive(i_field) )
 
@@ -708,8 +731,8 @@ do ic = 1, n_points
 end do
 
 
-if ( l_last_level ) then
-  ! If this is the last level...
+if ( l_last_level .and. (.not. l_to_full_level) ) then
+  ! If this is the last level (and the 2nd half-level step)...
   ! See if any points haven't fully detrained:
   l_any_hit_last = .false.
   ic_loop: do ic = 1, n_points
@@ -751,7 +774,7 @@ if ( l_last_level ) then
 
     end if
   end if  ! ( l_any_hit_last )
-end if  ! ( l_last_level )
+end if  ! ( l_last_level .and. (.not. l_to_full_level) )
 
 
 ! Check outputs for bad values (NaN, Inf, etc)

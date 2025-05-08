@@ -66,6 +66,9 @@ real(kind=real_umphys), intent(in out) ::                                      &
                                          tdims%j_start:tdims%j_end,            &
                                          1:tdims%k_end )
 
+! Temporary work variables for cloud water contents
+real(kind=real_umphys) :: qcl, qcf, qc
+
 ! Max implied in-cloud condensate mixing-ratio.
 ! Used to compute a corresponding minimum allowed cloud-fraction
 ! imposed as a safety check to avoid advection or convection creating
@@ -79,7 +82,7 @@ real(kind=real_umphys), parameter :: qc_incloud_max = 5.0e-3  ! 5 g kg-1
 integer :: i, j, k
 
 
-!$OMP PARALLEL DEFAULT(none) private( i, j, k )                                &
+!$OMP PARALLEL DEFAULT(none) private( i, j, k, qcl, qcf, qc )                  &
 !$OMP SHARED( l_mcr_qcf2, tdims,                                               &
 !$OMP         cf_liquid_star, cf_frozen_star, bulk_cf_star,                    &
 !$OMP         qcl_star, qcf_star, qcf2_star,                                   &
@@ -97,17 +100,15 @@ if ( l_mcr_qcf2 ) then
   do k = 1, tdims%k_end
     do j = tdims%j_start, tdims%j_end
       do i = tdims%i_start, tdims%i_end
-        cf_liquid_star(i,j,k)                                                  &
-          = min( max( cf_liquid_star(i,j,k),                                   &
-                      qcl_star(i,j,k) / qc_incloud_max ), 1.0 )
-        cf_frozen_star(i,j,k)                                                  &
-          = min( max( cf_frozen_star(i,j,k),                                   &
-                      ( qcf_star(i,j,k) + qcf2_star(i,j,k) )                   &
-                                      / qc_incloud_max ), 1.0 )
-        bulk_cf_star(i,j,k)                                                    &
-          = min( max( bulk_cf_star(i,j,k),                                     &
-                      ( qcl_star(i,j,k) + qcf_star(i,j,k) + qcf2_star(i,j,k) ) &
-                                      / qc_incloud_max ), 1.0 )
+        qcl = max( qcl_star(i,j,k), 0.0 )
+        qcf = max( qcf_star(i,j,k), 0.0 ) + max( qcf2_star(i,j,k), 0.0 )
+        qc = qcl + qcf
+        cf_liquid_star(i,j,k) = min( max( cf_liquid_star(i,j,k),               &
+                                          qcl / qc_incloud_max ), 1.0 )
+        cf_frozen_star(i,j,k) = min( max( cf_frozen_star(i,j,k),               &
+                                          qcf / qc_incloud_max ), 1.0 )
+        bulk_cf_star(i,j,k)   = min( max( bulk_cf_star(i,j,k),                 &
+                                          qc  / qc_incloud_max ), 1.0 )
       end do
     end do
   end do
@@ -120,16 +121,15 @@ else  ! .not. l_mcr_qcf2
   do k = 1, tdims%k_end
     do j = tdims%j_start, tdims%j_end
       do i = tdims%i_start, tdims%i_end
-        cf_liquid_star(i,j,k)                                                  &
-          = min( max( cf_liquid_star(i,j,k),                                   &
-                      qcl_star(i,j,k) / qc_incloud_max ), 1.0 )
-        cf_frozen_star(i,j,k)                                                  &
-          = min( max( cf_frozen_star(i,j,k),                                   &
-                      qcf_star(i,j,k) / qc_incloud_max ), 1.0 )
-        bulk_cf_star(i,j,k)                                                    &
-          = min( max( bulk_cf_star(i,j,k),                                     &
-                      ( qcl_star(i,j,k) + qcf_star(i,j,k) )                    &
-                                      / qc_incloud_max ), 1.0 )
+        qcl = max( qcl_star(i,j,k), 0.0 )
+        qcf = max( qcf_star(i,j,k), 0.0 )
+        qc = qcl + qcf
+        cf_liquid_star(i,j,k) = min( max( cf_liquid_star(i,j,k),               &
+                                          qcl / qc_incloud_max ), 1.0 )
+        cf_frozen_star(i,j,k) = min( max( cf_frozen_star(i,j,k),               &
+                                          qcf / qc_incloud_max ), 1.0 )
+        bulk_cf_star(i,j,k)   = min( max( bulk_cf_star(i,j,k),                 &
+                                          qc  / qc_incloud_max ), 1.0 )
       end do
     end do
   end do
@@ -164,10 +164,9 @@ if ( l_mcr_precfrac ) then
     do k = 1, tdims%k_end
       do j = tdims%j_start, tdims%j_end
         do i = tdims%i_start, tdims%i_end
-          precfrac_star(i,j,k)                                                 &
-            = min( max( precfrac_star(i,j,k),                                  &
-                        ( qrain_star(i,j,k) + qgraup_star(i,j,k) )             &
-                        / qc_incloud_max ), 1.0 )
+          qc = max( qrain_star(i,j,k), 0.0 ) + max( qgraup_star(i,j,k), 0.0 )
+          precfrac_star(i,j,k) = min( max( precfrac_star(i,j,k),               &
+                                           qc / qc_incloud_max ), 1.0 )
         end do
       end do
     end do
@@ -178,9 +177,9 @@ if ( l_mcr_precfrac ) then
     do k = 1, tdims%k_end
       do j = tdims%j_start, tdims%j_end
         do i = tdims%i_start, tdims%i_end
-          precfrac_star(i,j,k)                                                 &
-            = min( max( precfrac_star(i,j,k),                                  &
-                        qrain_star(i,j,k) / qc_incloud_max ), 1.0 )
+          qc = max( qrain_star(i,j,k), 0.0 )
+          precfrac_star(i,j,k) = min( max( precfrac_star(i,j,k),               &
+                                           qc / qc_incloud_max ), 1.0 )
         end do
       end do
     end do

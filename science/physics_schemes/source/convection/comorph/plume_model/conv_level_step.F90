@@ -724,7 +724,8 @@ end if  ! ( l_inter_impl_det )
 ! Call routine to set detrained mass and detrained air properties,
 ! and update the mass-flux and parcel mean properties due to detrainment
 call set_det( n_points, n_fields_tot, max_points, max_points,                  &
-              max_buoy_heights, n_buoy_vars, l_down, l_last_level,             &
+              max_buoy_heights, n_buoy_vars,                                   &
+              l_down, l_last_level, l_to_full_level,                           &
               cmpr, k, draft_string,                                           &
               buoyancy_super, i_next,                                          &
               delta_tv_k, core_mean_ratio,                                     &
