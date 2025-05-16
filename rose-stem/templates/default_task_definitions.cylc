@@ -47,6 +47,10 @@
     {% endif %}
 {% endif %}
 
+{% if "log_to_rank_zero_only" not in task_dict %}
+    {% do task_dict.update({"log_to_rank_zero_only": ".false."}) %}
+{% endif %}
+
 {% if "tsteps" not in task_dict %}
     {% do task_dict.update({"tsteps": 1}) %}
 {% endif %}

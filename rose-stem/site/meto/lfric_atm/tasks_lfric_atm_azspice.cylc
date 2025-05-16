@@ -11,6 +11,13 @@
         "memory": [8, "GB"],
     }) %}
 
+{% elif task_ns.conf_name == "nwp_gal9_nomg-C12" %}
+    {% if ("production" in task) %}
+        {% do task_dict.update({
+            "log_to_rank_zero_only": ".true.",
+        }) %}
+    {% endif %}
+
 {% elif task_ns.conf_name == "nwp_gal9-C12-short" %}
 
     {% do task_dict.update({
