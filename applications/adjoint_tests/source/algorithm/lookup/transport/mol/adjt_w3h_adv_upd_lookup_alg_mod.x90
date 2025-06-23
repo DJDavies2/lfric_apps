@@ -16,7 +16,6 @@ module adjt_w3h_adv_upd_lookup_alg_mod
   use finite_element_config_mod,       only : element_order_h, element_order_V
   use operator_mod,                    only : operator_type
   use constants_mod,                   only : i_def, r_def, r_tran
-  use setop_random_kernel_mod,         only : setop_random_kernel_type
   use log_mod,                         only : log_event,        &
                                               LOG_LEVEL_ERROR,  &
                                               LOG_LEVEL_INFO,   &

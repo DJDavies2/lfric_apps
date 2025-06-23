@@ -15,7 +15,6 @@ module adjt_sci_convert_hdiv_field_alg_mod
                                                   element_order_v
   use fs_continuity_mod,                    only: W3, W2
   use constants_mod,                        only: i_def, r_def
-  use setop_random_kernel_mod,              only: setop_random_kernel_type
   use log_mod,                              only: log_event, &
                                                   log_level_error, &
                                                   log_level_debug, &

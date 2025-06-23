@@ -8,13 +8,14 @@
      use fs_continuity_mod, only : w2, w3
      use operator_mod, only : operator_type
      use constants_mod, only : i_def, r_def
-     use setop_random_kernel_mod, only : setop_random_kernel_type
+-    use setop_random_kernel_mod, only : setop_random_kernel_type
 -    use log_mod, only : log_event, log_level_error, log_level_info, log_scratch_space
++    use setop_random_alg_mod, only : setop_random_alg
 +    use log_mod, only : log_event, log_level_error, log_level_info, log_scratch_space, log_level_debug
      real(kind=r_def), parameter :: overall_tolerance = 1500.0_r_def
      type(mesh_type), pointer, intent(in) :: mesh
      type(field_type), dimension(3), intent(in), optional :: chi
-@@ -28,61 +28,57 @@
+@@ -28,61 +28,58 @@
      type(field_type) :: wind
      type(operator_type) :: m3_inv
      type(field_type) :: advective_increment_input
@@ -56,11 +57,14 @@
      ! Initialise arguments and call the tangent-linear kernel.
      call invoke(setval_random(advective_increment), setval_x(advective_increment_input, advective_increment), &
 -&setval_random(tracer), setval_x(tracer_input, tracer), setval_random(ls_wind), setval_x(ls_wind_input, ls_wind), &
-+&setval_random(tracer), setval_random(ls_wind), &
- &setval_random(wind), setval_x(wind_input, wind), setop_random_kernel_type(m3_inv), &
- &tl_w3v_advective_update_kernel_type(advective_increment, tracer, ls_wind, wind, m3_inv), &
+-&setval_random(wind), setval_x(wind_input, wind), setop_random_kernel_type(m3_inv), &
+-&tl_w3v_advective_update_kernel_type(advective_increment, tracer, ls_wind, wind, m3_inv), &
 -&x_innerproduct_x(advective_increment_inner_prod, advective_increment), x_innerproduct_x(tracer_inner_prod, tracer), &
 -&x_innerproduct_x(ls_wind_inner_prod, ls_wind), x_innerproduct_x(wind_inner_prod, wind))
++&setval_random(tracer), setval_random(ls_wind), &
++&setval_random(wind), setval_x(wind_input, wind))
++    call setop_random_alg(m3_inv)
++    call invoke(tl_w3v_advective_update_kernel_type(advective_increment, tracer, ls_wind, wind, m3_inv), &
 +&x_innerproduct_x(advective_increment_inner_prod, advective_increment), &
 +&x_innerproduct_x(wind_inner_prod, wind))
 +    write( log_scratch_space, * ) "atlt_w3v_advective_update inner products:"

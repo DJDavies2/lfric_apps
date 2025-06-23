@@ -1,8 +1,10 @@
-@@ -15,7 +15,7 @@
+@@ -14,8 +14,8 @@
+     use fs_continuity_mod, only : w2, w2h, w2v, w3, wtheta
      use operator_mod, only : operator_type
      use constants_mod, only : i_def, r_def
-     use setop_random_kernel_mod, only : setop_random_kernel_type
+-    use setop_random_kernel_mod, only : setop_random_kernel_type
 -    use log_mod, only : log_event, log_level_error, log_level_info, log_scratch_space
++    use setop_random_alg_mod, only : setop_random_alg
 +    use log_mod, only : log_event, log_level_error, log_level_info, log_scratch_space, log_level_debug
      real(kind=r_def), parameter :: overall_tolerance = 1500.0_r_def
      type(mesh_type), pointer, intent(in) :: mesh
@@ -43,7 +45,7 @@
  
      vector_space_w2_ptr => function_space_collection%get_fs(mesh,element_order_h,element_order_v,w2)
      vector_space_w2h_ptr => function_space_collection%get_fs(mesh,element_order_h,element_order_v,w2h)
-@@ -95,52 +96,68 @@
+@@ -95,52 +96,73 @@
      call wind_uv_input%initialise(vector_space=vector_space_w2h_ptr, name='wind_uv_input')
      call wind_w_input%initialise(vector_space=vector_space_w2v_ptr, name='wind_w_input')
      call exner_input%initialise(vector_space=vector_space_w3_ptr, name='exner_input')
@@ -63,11 +65,19 @@
  &setval_random(wind_w), setval_x(wind_w_input, wind_w), setval_random(exner), setval_x(exner_input, exner), &
 -&setval_random(mt_lumped_inv), setval_x(mt_lumped_inv_input, mt_lumped_inv), setval_random(norm_u), setval_x(norm_u_input, &
 -&norm_u), setop_random_kernel_type(pt2), setop_random_kernel_type(mu_cd), setop_random_kernel_type(p2t), &
-+&setval_random(mt_lumped_inv), setval_random(norm_u), &
-+&setop_random_kernel_type(pt2), setop_random_kernel_type(mu_cd), setop_random_kernel_type(p2t), &
- &setop_random_kernel_type(grad), setop_random_kernel_type(m3p), setop_random_kernel_type(q32), setop_random_kernel_type(p3t), &
- &apply_mixed_operator_kernel_type(lhs_uv, lhs_w, lhs_p, wind_uv, wind_w, exner, pt2, mt_lumped_inv, mu_cd, p2t, grad, norm_u, m3p, &
- &q32, p3t), x_innerproduct_x(lhs_uv_inner_prod, lhs_uv), x_innerproduct_x(lhs_w_inner_prod, lhs_w), &
+-&setop_random_kernel_type(grad), setop_random_kernel_type(m3p), setop_random_kernel_type(q32), setop_random_kernel_type(p3t), &
+-&apply_mixed_operator_kernel_type(lhs_uv, lhs_w, lhs_p, wind_uv, wind_w, exner, pt2, mt_lumped_inv, mu_cd, p2t, grad, norm_u, m3p, &
+-&q32, p3t), x_innerproduct_x(lhs_uv_inner_prod, lhs_uv), x_innerproduct_x(lhs_w_inner_prod, lhs_w), &
++&setval_random(mt_lumped_inv), setval_random(norm_u))
++    call setop_random_alg(pt2)
++    call setop_random_alg(mu_cd)
++    call setop_random_alg(p2t)
++    call setop_random_alg(grad)
++    call setop_random_alg(m3p)
++    call setop_random_alg(q32)
++    call setop_random_alg(p3t)
++    call invoke(apply_mixed_operator_kernel_type(lhs_uv, lhs_w, lhs_p, wind_uv, wind_w, exner, pt2, mt_lumped_inv, mu_cd, p2t, &
++&grad, norm_u, m3p, q32, p3t), x_innerproduct_x(lhs_uv_inner_prod, lhs_uv), x_innerproduct_x(lhs_w_inner_prod, lhs_w), &
  &x_innerproduct_x(lhs_p_inner_prod, lhs_p), x_innerproduct_x(wind_uv_inner_prod, wind_uv), x_innerproduct_x(wind_w_inner_prod, &
 -&wind_w), x_innerproduct_x(exner_inner_prod, exner), x_innerproduct_x(mt_lumped_inv_inner_prod, mt_lumped_inv), &
 -&x_innerproduct_x(norm_u_inner_prod, norm_u))
@@ -132,7 +142,7 @@
      inner2 = 0.0_r_def
      inner2 = inner2 + lhs_uv_lhs_uv_input_inner_prod
      inner2 = inner2 + lhs_w_lhs_w_input_inner_prod
-@@ -148,8 +165,6 @@
+@@ -148,8 +170,6 @@
      inner2 = inner2 + wind_uv_wind_uv_input_inner_prod
      inner2 = inner2 + wind_w_wind_w_input_inner_prod
      inner2 = inner2 + exner_exner_input_inner_prod

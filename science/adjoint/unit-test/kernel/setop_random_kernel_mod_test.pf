@@ -3,7 +3,7 @@
 ! For further details please refer to the file LICENCE.original which you
 ! should have received as part of this distribution.
 !-----------------------------------------------------------------------------
-!> Tests the setop_random_kernel_mod properly allocates data to stencils
+!> Tests that setop_random_kernel_mod properly allocates data to operator data
 module setop_random_kernel_mod_test
 
   use constants_mod, only: i_def, r_def
@@ -44,7 +44,7 @@ contains
 
     class(setop_random_test_type), intent(inout) :: this
 
-    allocate( this%local_stencil( ndf_aspc1, ndf_aspc2, ncell_3d ) )
+    allocate( this%local_stencil( ncell_3d, ndf_aspc1, ndf_aspc2 ) )
 
   end subroutine setUp
 

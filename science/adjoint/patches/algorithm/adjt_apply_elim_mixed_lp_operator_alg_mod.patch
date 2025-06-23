@@ -4,12 +4,13 @@
      use fs_continuity_mod, only : w2, w3, wtheta
 -    use operator_mod, only : operator_type
 -    use constants_mod, only : i_def, r_def
+-    use setop_random_kernel_mod, only : setop_random_kernel_type
+-    use log_mod, only : log_event, log_level_error, log_level_info, log_scratch_space
+-    real(kind=r_def), parameter :: overall_tolerance = 1500.0_r_def
 +    use r_solver_field_mod, only : r_solver_field_type
 +    use r_solver_operator_mod, only : r_solver_operator_type
 +    use constants_mod, only : i_def, r_def, r_solver
-     use setop_random_kernel_mod, only : setop_random_kernel_type
--    use log_mod, only : log_event, log_level_error, log_level_info, log_scratch_space
--    real(kind=r_def), parameter :: overall_tolerance = 1500.0_r_def
++    use setop_random_alg_mod, only : setop_random_alg
 +    use log_mod, only : log_event, log_level_error, log_level_info, log_scratch_space, log_level_debug
 +    real(kind=r_solver), parameter :: overall_tolerance = 1500.0_r_solver
      type(mesh_type), pointer, intent(in) :: mesh
@@ -64,8 +65,18 @@
  
      vector_space_w2_ptr => function_space_collection%get_fs(mesh,element_order_h,element_order_v,w2)
      vector_space_w3_ptr => function_space_collection%get_fs(mesh,element_order_h,element_order_v,w3)
-@@ -72,11 +78,29 @@
- &apply_elim_mixed_lp_operator_kernel_type(lhs_exner, theta, u, exner, m3exner, q32, p3theta), &
+@@ -67,16 +73,36 @@
+     exner_inner_prod = 0.0_r_def
+     ! Initialise arguments and call the tangent-linear kernel.
+     call invoke(setval_random(lhs_exner), setval_x(lhs_exner_input, lhs_exner), setval_random(theta), setval_x(theta_input, &
+-&theta), setval_random(u), setval_x(u_input, u), setval_random(exner), setval_x(exner_input, exner), &
+-&setop_random_kernel_type(m3exner), setop_random_kernel_type(q32), setop_random_kernel_type(p3theta), &
+-&apply_elim_mixed_lp_operator_kernel_type(lhs_exner, theta, u, exner, m3exner, q32, p3theta), &
++&theta), setval_random(u), setval_x(u_input, u), setval_random(exner), setval_x(exner_input, exner))
++    call setop_random_alg(m3exner)
++    call setop_random_alg(q32)
++    call setop_random_alg(p3theta)
++    call invoke(apply_elim_mixed_lp_operator_kernel_type(lhs_exner, theta, u, exner, m3exner, q32, p3theta), &
  &x_innerproduct_x(lhs_exner_inner_prod, lhs_exner), x_innerproduct_x(theta_inner_prod, theta), x_innerproduct_x(u_inner_prod, u), &
  &x_innerproduct_x(exner_inner_prod, exner))
 -    inner1 = 0.0_r_def
@@ -99,7 +110,7 @@
      lhs_exner_lhs_exner_input_inner_prod = 0.0_r_def
      theta_theta_input_inner_prod = 0.0_r_def
      u_u_input_inner_prod = 0.0_r_def
-@@ -85,11 +109,11 @@
+@@ -85,11 +111,11 @@
  &x_innerproduct_y(lhs_exner_lhs_exner_input_inner_prod, lhs_exner, lhs_exner_input), &
  &x_innerproduct_y(theta_theta_input_inner_prod, theta, theta_input), x_innerproduct_y(u_u_input_inner_prod, u, u_input), &
  &x_innerproduct_y(exner_exner_input_inner_prod, exner, exner_input))

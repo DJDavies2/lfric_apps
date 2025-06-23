@@ -1,4 +1,4 @@
-@@ -4,12 +4,13 @@
+@@ -4,20 +4,22 @@
  
    contains
    subroutine atlt_project_eos_pressure_alg(mesh, chi, panel_id)
@@ -13,11 +13,12 @@
      use finite_element_config_mod, only : element_order_h, element_order_v
      use fs_continuity_mod, only : w0, w3, wtheta
      use operator_mod, only : operator_type
-@@ -17,7 +18,8 @@
+     use quadrature_xyoz_mod, only : quadrature_xyoz_type
      use constants_mod, only : i_def, r_def
      use quadrature_rule_gaussian_mod, only : quadrature_rule_gaussian_type
-     use setop_random_kernel_mod, only : setop_random_kernel_type
+-    use setop_random_kernel_mod, only : setop_random_kernel_type
 -    use log_mod, only : log_event, log_level_error, log_level_info, log_scratch_space
++    use setop_random_alg_mod, only : setop_random_alg
 +    use log_mod, only : log_event, log_level_error, log_level_info, log_scratch_space, log_level_debug
 +    use adjoint_test_parameters_mod, only : ls_rho_range, ls_theta_range, ls_md1_range
      real(kind=r_def), parameter :: overall_tolerance = 1500.0_r_def
@@ -105,15 +106,16 @@
 -    panel_id_1_inner_prod = 0.0_r_def
      ! Initialise arguments and call the tangent-linear kernel.
      call invoke(setval_random(exner), setval_x(exner_input, exner), setval_random(rho), setval_x(rho_input, rho), &
- &setval_random(theta), setval_x(theta_input, theta), setval_random(moist_dyn_gas), setval_x(moist_dyn_gas_input, moist_dyn_gas), &
+-&setval_random(theta), setval_x(theta_input, theta), setval_random(moist_dyn_gas), setval_x(moist_dyn_gas_input, moist_dyn_gas), &
 -&setval_random(ls_rho), setval_x(ls_rho_input, ls_rho), setval_random(ls_theta), setval_x(ls_theta_input, ls_theta), &
 -&setval_random(ls_moist_dyn_gas), setval_x(ls_moist_dyn_gas_input, ls_moist_dyn_gas), setval_random(chi3(1_i_def)), &
 -&setval_x(chi3_input(1_i_def), chi3(1_i_def)), setval_random(chi3(2_i_def)), setval_x(chi3_input(2_i_def), chi3(2_i_def)), &
 -&setval_random(chi3(3_i_def)), setval_x(chi3_input(3_i_def), chi3(3_i_def)), setval_random(panel_id_1), setval_x(panel_id_1_input, &
 -&panel_id_1), setop_random_kernel_type(m3_inv), tl_project_eos_pressure_kernel_type(exner, rho, theta, moist_dyn_gas, ls_rho, &
 -&ls_theta, ls_moist_dyn_gas, chi3, panel_id_1, m3_inv, qr_xyoz), x_innerproduct_x(exner_inner_prod, exner), &
-+&setop_random_kernel_type(m3_inv))
++&setval_random(theta), setval_x(theta_input, theta), setval_random(moist_dyn_gas), setval_x(moist_dyn_gas_input, moist_dyn_gas))
 +
++    call setop_random_alg(m3_inv)
 +    call assign_field_random_range( ls_rho, ls_rho_range(1), ls_rho_range(2) )
 +    call assign_field_random_range( ls_theta, ls_theta_range(1), ls_theta_range(2) )
 +    call assign_field_random_range( ls_moist_dyn_gas, ls_md1_range(1), ls_md1_range(2) )
