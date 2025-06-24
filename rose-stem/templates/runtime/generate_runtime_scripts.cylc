@@ -74,8 +74,7 @@
 
 {% elif "macro_chains_checker" in task %}
 
-    [[{{task}}]]
-        inherit={{inherit.str|upper}}
+        inherit=SCRIPTS,{{site_vars["scripts_platform"]|upper}}_PLOT
         script="rose task-run --app-key=check_macro_chains"
 
 {% elif "validate_rose_meta" in task %}
