@@ -69,7 +69,7 @@ contains
     ! These are in ANY_DISCONTINUOUS_SPACE_1
     integer :: ndf_adspc1_sd_orog, undf_adspc1_sd_orog
 
-    integer :: nlayers
+    integer :: nlayers, loop_upper_bound
 
     type(field_proxy_type) :: du_blk_proxy, dv_blk_proxy,             &
                               du_orog_gwd_proxy, dv_orog_gwd_proxy,   &
@@ -140,8 +140,11 @@ contains
     ndf_adspc1_sd_orog = sd_orog_proxy%vspace%get_ndf()
     undf_adspc1_sd_orog = sd_orog_proxy%vspace%get_undf()
 
+    ! Temporary variable for loop bound helps OpenMP
+    loop_upper_bound = mesh%get_last_edge_cell()    
     ! Loop over cells
-    do cell=1,mesh%get_last_edge_cell()
+    !$omp parallel do default(shared), private(cell), schedule(static)
+    do cell=1, loop_upper_bound
       ! Only call orographic_drag_kernel_code at points where the
       ! standard deviation of the subgrid orography is more than zero.
       if ( sd_orog_proxy%data(map_adspc1_sd_orog(1, cell)) > 0.0_r_def ) then
@@ -167,7 +170,7 @@ contains
       end if ! sd_orog_proxy%data(map_adspc1_sd_orog(1, cell)) > 0.0_r_def
 
     end do
-
+    !$omp end parallel do
 
     ! Set halos dirty/clean for fields modified in the above loop
     call du_blk_proxy%set_dirty()

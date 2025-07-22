@@ -34,9 +34,6 @@
         {% set script_str.name = script_str.name~" --opt-conf-key=xios_server" %}
     {% endif %}
     {% set script_str.name = script_str.name~" --opt-conf-key=suite_controlled" %}
-    {% if SITE=='ncas' and task_values["app_name"]=='lfric_atm' %}
-       {% set script_str.name = script_str.name~" --opt-conf-key=ncas-data" %}
-    {% endif %}
 {% endif %}
 
 {# The PANEL_DECOMP variable expects it to be quoted #}
