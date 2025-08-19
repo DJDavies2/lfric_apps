@@ -12,9 +12,9 @@
 # For CPU OMP, we want to choose which files get run through PSyclone,
 # and preserve existing hand coded optimisations.
 
-# Choose which files to Pre-proccess and PSyclone from physics_schemes / other physics source (e.g. UKCA)
+# Choose which files to Pre-proccess and PSyclone from physics_schemes / other source (e.g. UKCA)
 
-export PSYCLONE_PHYSICS_FILES =
+export PSYCLONE_PHYSICS_FILES = mphys_kernel_mod
 
 ##### TRANSMUTE_INCLUDE_METHOD specify_include #####
 

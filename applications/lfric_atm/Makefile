@@ -128,7 +128,17 @@ build: ALWAYS
 	$Q$(MAKE) $(QUIET_ARG) -f $(LFRIC_BUILD)/psyclone/psyclone_psykal.mk \
 	          SOURCE_DIR=$(APPS_ROOT_DIR)/interfaces/physics_schemes_interface/source
 	$(call MESSAGE,========================================)
-	$(call MESSAGE,Preprocess and PSyclone Physics)
+	$(call MESSAGE,PSycloning Gungho dynamical core)
+	$(call MESSAGE,========================================)
+	$Q$(MAKE) $(QUIET_ARG) -f $(LFRIC_BUILD)/psyclone/psyclone_psykal.mk \
+	          SOURCE_DIR=$(APPS_ROOT_DIR)/science/gungho/source
+	$(call MESSAGE,========================================)
+	$(call MESSAGE,PSycloning $(PROJECT_NAME))
+	$(call MESSAGE,========================================)
+	$Q$(MAKE) $(QUIET_ARG) -f $(LFRIC_BUILD)/psyclone/psyclone_psykal.mk \
+	          SOURCE_DIR=source
+	$(call MESSAGE,========================================)
+	$(call MESSAGE,Preprocess and PSyclone Transmute)
 	$(call MESSAGE,========================================)
 # Note depending on site target requirements, either all source or specific source will be affected
 # See application overrides and files exported there
@@ -143,16 +153,6 @@ build: ALWAYS
 	          PSYCLONE_PHYSICS_FILES="$(PSYCLONE_PHYSICS_FILES)" \
 	          PSYCLONE_DIRECTORIES="$(PSYCLONE_DIRECTORIES)" \
 	          PSYCLONE_PHYSICS_EXCEPTION="$(PSYCLONE_PHYSICS_EXCEPTION)"
-	$(call MESSAGE,========================================)
-	$(call MESSAGE,PSycloning Gungho dynamical core)
-	$(call MESSAGE,========================================)
-	$Q$(MAKE) $(QUIET_ARG) -f $(LFRIC_BUILD)/psyclone/psyclone_psykal.mk \
-	          SOURCE_DIR=$(APPS_ROOT_DIR)/science/gungho/source
-	$(call MESSAGE,========================================)
-	$(call MESSAGE,PSycloning $(PROJECT_NAME))
-	$(call MESSAGE,========================================)
-	$Q$(MAKE) $(QUIET_ARG) -f $(LFRIC_BUILD)/psyclone/psyclone_psykal.mk \
-	          SOURCE_DIR=source
 	$(call MESSAGE,=========================================================)
 	$(call MESSAGE,Analysing $(PROJECT) build dependencies)
 	$(call MESSAGE,=========================================================)
