@@ -1,27 +1,9 @@
-<<<<<<< .working
-Inner product checksum rho = 40DACD093885EFB6
-Inner product checksum theta = 4231B96A3AA1708E
-Inner product checksum u = 45608170FBB57ED2
-Inner product checksum mr1 = 3FF9FEA259267F11
-Inner product checksum mr2 = 3EE915BF25CD4FE8
-Inner product checksum mr3 = 3EAED4060C77DD16
-Inner product checksum mr4 = 3EDA56FBDF4D04DE
-||||||| .merge-left.r12057
-Inner product checksum rho = 40DACD2F289D623E
-Inner product checksum theta = 4231B8A5B3B0411E
-Inner product checksum u = 45608C4C5764F87D
-Inner product checksum mr1 = 3FFA03138C7690B5
-Inner product checksum mr2 = 3EEA7E0523178EE7
-Inner product checksum mr3 = 3EADF37701107900
-Inner product checksum mr4 = 3ED99A48F857DA05
-=======
-Inner product checksum rho = 40DACD51CE3002D1
-Inner product checksum theta = 4231B936AC9F0090
-Inner product checksum u = 45608827D6FC69F8
-Inner product checksum mr1 = 3FF9FB7E8DF2C3DC
-Inner product checksum mr2 = 3EEB02E04F5D5916
-Inner product checksum mr3 = 3EAD3B0AD23AF716
-Inner product checksum mr4 = 3EDC96103ADBFFBD
->>>>>>> .merge-right.r13724
+Inner product checksum rho = 40DACD1C74D3B3A3
+Inner product checksum theta = 4231B9579819BD2E
+Inner product checksum u = 45607C9B4B5BA226
+Inner product checksum mr1 = 3FF9FAA2E1D54581
+Inner product checksum mr2 = 3EEB11DF3BACC440
+Inner product checksum mr3 = 3EAD786B2D39A478
+Inner product checksum mr4 = 3ED9BB580D31C58B
 Inner product checksum mr5 =                0
 Inner product checksum mr6 =                0

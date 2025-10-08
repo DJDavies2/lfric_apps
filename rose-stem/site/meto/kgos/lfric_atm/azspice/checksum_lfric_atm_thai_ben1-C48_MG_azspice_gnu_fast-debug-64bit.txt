@@ -1,13 +1,3 @@
-<<<<<<< .working
-Inner product checksum rho = 410D68FD85E85D4A
-Inner product checksum theta = 423957DA81AC46AC
-Inner product checksum u = 4478BF84E20433E8
-||||||| .merge-left.r12057
-Inner product checksum rho = 410D68FD85E85D2D
-Inner product checksum theta = 423957DA81AC46E1
-Inner product checksum u = 4478BF84E201FF6F
-=======
-Inner product checksum rho = 410D68FD85E85CC7
-Inner product checksum theta = 423957DA81AC477C
-Inner product checksum u = 4478BF84E20B1602
->>>>>>> .merge-right.r13724
+Inner product checksum rho = 410D68FD85E85D4C
+Inner product checksum theta = 423957DA81AC46D8
+Inner product checksum u = 4478BF84E20F25D4
