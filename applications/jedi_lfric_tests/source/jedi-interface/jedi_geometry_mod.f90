@@ -103,7 +103,7 @@ subroutine initialise( self, mpi_comm, configuration )
 
   class( jedi_geometry_type ), intent(inout) :: self
   integer( kind=i_def ),          intent(in) :: mpi_comm
-  type(namelist_collection_type), intent(in) :: configuration
+  type(namelist_collection_type), target, intent(in) :: configuration
 
   ! Local
   type(mesh_type), pointer     :: mesh
@@ -116,17 +116,23 @@ subroutine initialise( self, mpi_comm, configuration )
                                   sigma_W3_levels(:),   &
                                   sigma_Wtheta_levels(:)
 
+write(0, '(a)') "in initialise 1"; flush(0)
   ! Save the mpi_comm
   self%mpi_comm = mpi_comm
 
+write(0, '(a)') "in initialise 2"; flush(0)
   ! Setup mesh
   mpi_obj = self%get_mpi_comm()
+write(0, '(a)') "in initialise 3"; flush(0)
   call initialise_mesh( self%mesh_name, configuration, mpi_obj )
 
+write(0, '(a)') "in initialise 4"; flush(0)
   geometry_configuration => configuration%get_namelist('jedi_geometry')
   ! Setup the IO
+write(0, '(a)') "in initialise 5"; flush(0)
   call self%setup_io( geometry_configuration )
 
+write(0, '(a)') "in initialise 6"; flush(0)
   ! @todo: The geometry should read some fields: orog, height, ancils
 
   ! The following is testing the mesh interface
@@ -134,27 +140,36 @@ subroutine initialise( self, mpi_comm, configuration )
   ! Set target mesh for all functions in the interface
   mesh => self%get_mesh()
 
+write(0, '(a)') "in initialise 7"; flush(0)
   if ( .not. is_mesh_cubesphere(mesh) ) then
     call log_event( "Working mesh is not a cubesphere", LOG_LEVEL_ERROR )
   end if
 
+write(0, '(a)') "in initialise 8"; flush(0)
   ! Get grid size and layers
   self%n_horizontal = get_layer_ncells(mesh)
 
+write(0, '(a)') "in initialise 9"; flush(0)
   ! Create horizontal_map
   lonlat = get_lonlat(mesh)
   allocate( self%horizontal_map( self%n_horizontal ) )
 
+write(0, '(a)') "in initialise 10"; flush(0)
   ! For mock purposes return sequential map
   do i_horizontal=1,self%n_horizontal
     self%horizontal_map( i_horizontal ) = i_horizontal
   end do
 
+write(0, '(a)') "in initialise 11"; flush(0)
   ! Here JEDI deals with physical coordinates
   domain_height = mesh%get_domain_top()
+write(0, '(a)') "in initialise 12"; flush(0)
   sigma_W3_levels = get_sigma_w3_levels(mesh)
+write(0, '(a)') "in initialise 13"; flush(0)
   sigma_Wtheta_levels = get_sigma_wtheta_levels(mesh)
+write(0, '(a)') "in initialise 14"; flush(0)
   stretching_height = get_stretching_height()
+write(0, '(a)') "in initialise 15"; flush(0)
 
 end subroutine initialise
 
@@ -339,19 +354,23 @@ subroutine setup_io(self, configuration)
   type( jedi_duration_type )                     :: io_time_step
   type( jedi_datetime_type )                     :: io_calender_start
 
+write(0, '(a)') "in setup_io 1"; flush(0)
   ! Create IO clock and setup IO
   call configuration%get_value( 'io_time_step', io_time_step_str )
   call io_time_step%init( io_time_step_str )
   call io_time_step%get_duration( duration )
   time_step = real( duration, r_second )
 
+write(0, '(a)') "in setup_io 2"; flush(0)
   call configuration%get_value( 'io_calender_start', io_calender_start_str )
   call io_calender_start%init( io_calender_start_str )
   call io_calender_start%to_string(calender_start)
 
+write(0, '(a)') "in setup_io 3"; flush(0)
   call jedi_lfric_init_time( time_step, calender_start, &
                              self%io_clock, self%calendar )
 
+write(0, '(a)') "in setup_io 4"; flush(0)
   ! Allocate file_meta depending on how many files are required
   call configuration%get_value( 'io_setup_increment', self%io_setup_increment )
   if ( self%io_setup_increment ) then
@@ -360,6 +379,7 @@ subroutine setup_io(self, configuration)
     allocate( file_meta_data(2) )
   endif
 
+write(0, '(a)') "in setup_io 5"; flush(0)
   ! Setup IO files: i) state read, ii) state write and iii) increment read
   !                 (if requested)
   ! Note, xios_id is arbitrary but has to be unique within a context
@@ -371,6 +391,7 @@ subroutine setup_io(self, configuration)
   io_mode_str = "read"
   field_group_id = "read_fields"
   freq=1_i_def
+write(0, '(a)') "in setup_io 6"; flush(0)
   call file_meta_data(1)%initialise( file_name,   &
                                      xios_id,     &
                                      io_mode_str, &
@@ -383,12 +404,14 @@ subroutine setup_io(self, configuration)
   io_mode_str = "write"
   field_group_id = "write_fields"
   freq=1_i_def
+write(0, '(a)') "in setup_io 7"; flush(0)
   call file_meta_data(2)%initialise( file_name,   &
                                      xios_id,     &
                                      io_mode_str, &
                                      freq,        &
                                      field_group_id )
 
+write(0, '(a)') "in setup_io 8"; flush(0)
   ! Read increment if required
   if ( self%io_setup_increment ) then
     call configuration%get_value( 'io_path_inc_read', io_path_inc_read )
@@ -403,6 +426,7 @@ subroutine setup_io(self, configuration)
                                        freq,        &
                                        field_group_id )
   endif
+write(0, '(a)') "in setup_io 9"; flush(0)
 
   ! Setup XIOS with the files defined by file_meta_data
   context_name = "jedi_context"
@@ -413,11 +437,13 @@ subroutine setup_io(self, configuration)
                       self%calendar,        &
                       self%io_context,      &
                       self%io_clock )
+write(0, '(a)') "in setup_io 10"; flush(0)
 
   ! Tick out of initialisation state
   if ( .not. self%io_clock%tick() ) then
     call log_event( 'The LFRic IO has stopped.', LOG_LEVEL_ERROR )
   end if
+write(0, '(a)') "in setup_io 11"; flush(0)
 
 end subroutine setup_io
 
