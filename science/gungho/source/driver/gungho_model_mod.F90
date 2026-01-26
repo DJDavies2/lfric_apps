@@ -682,7 +682,8 @@ contains
                     apply_partition_check )
 
 
-    allocate( twod_names, source=base_mesh_names )
+    allocate(twod_names(size(base_mesh_names)))
+    twod_names(:) = base_mesh_names(:)
     do i=1, size(twod_names)
       twod_names(i) = trim(twod_names(i))//'_2d'
     end do
@@ -696,7 +697,8 @@ contains
     if (allocated(meshes_to_shift)) then
       if (size(meshes_to_shift) > 0) then
 
-        allocate( shifted_names, source=meshes_to_shift )
+        allocate(shifted_names(size(meshes_to_shift)))
+        shifted_names(:) = meshes_to_shift(:)
         do i=1, size(shifted_names)
           shifted_names(i) = trim(shifted_names(i))//'_shifted'
         end do
@@ -713,7 +715,8 @@ contains
     if (allocated(meshes_to_double)) then
       if (size(meshes_to_double) > 0) then
 
-        allocate( double_names, source=meshes_to_double )
+        allocate(double_names(size(meshes_to_double)))
+        double_names(:) = meshes_to_double(:)
         do i=1, size(double_names)
           double_names(i) = trim(double_names(i))//'_double'
         end do

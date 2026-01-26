@@ -130,6 +130,7 @@ contains
     integer(i_timestep)     :: S_index
     integer(i_timestep)     :: seconds
 
+write(0, '(a,a)') "in init_iso_string 1, trim(iso_duration) = ", trim(iso_duration); flush(0)
     write ( log_scratch_space, '(A)' )                     &
             'Initialising JEDI duration from iso_string: ' &
             // iso_duration
@@ -153,6 +154,7 @@ contains
     else
       absolute_duration = iso_duration      ! number is positive
     end if
+write(0, '(a,a)') "in init_iso_string 2, trim(absolute_duration) = ", trim(absolute_duration); flush(0)
 
     last_index = 1
 

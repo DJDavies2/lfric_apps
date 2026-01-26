@@ -107,28 +107,35 @@ subroutine initialise_infrastructure( self, filename, model_communicator )
   logical                                       :: lsubroutine_timers
 
 
+write(0, '(a)') "in initialise_infrastructure 1"; flush(0)
   ! Initialise the configuration
   call self%configuration%initialise( self%jedi_run_name, table_len=10 )
 
+write(0, '(a)') "in initialise_infrastructure 2"; flush(0)
   ! Initialise the model communicator to setup global_mpi
   call init_internal_comm( model_communicator )
 
+write(0, '(a)') "in initialise_infrastructure 3"; flush(0)
   ! Setup the config which is curently global
   call init_config( filename, jedi_lfric_tests_required_namelists, &
                     self%configuration )
 
+write(0, '(a)') "in initialise_infrastructure 4"; flush(0)
   ! Initialise the logger
   call lfric_comm%set_comm_mpi_val(model_communicator)
   call init_logger( lfric_comm, self%jedi_run_name )
 
+write(0, '(a)') "in initialise_infrastructure 5"; flush(0)
   ! Initialise timing wrapper
   io_nml => self%configuration%get_namelist('io')
   call io_nml%get_value('subroutine_timers', lsubroutine_timers)
   call init_timing( lfric_comm, lsubroutine_timers, trim(self%jedi_run_name), timer_output_path )
   self%timers_finalised = .false.
 
+write(0, '(a)') "in initialise_infrastructure 6"; flush(0)
   ! Initialise collections
   call init_collections()
+write(0, '(a)') "in initialise_infrastructure 7"; flush(0)
 
 end subroutine initialise_infrastructure
 
