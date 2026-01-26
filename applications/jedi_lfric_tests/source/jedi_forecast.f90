@@ -19,7 +19,7 @@
 !       contact darth@metofice.gov.uk for advice.
 program jedi_forecast
 
-  use cli_mod,                      only : get_initial_filename
+  use cli_mod,                      only : parse_command_line
   use constants_mod,                only : PRECISION_REAL, i_def, str_def
   use field_collection_mod,         only : field_collection_type
   use log_mod,                      only : log_event, log_scratch_space, &
@@ -58,7 +58,7 @@ program jedi_forecast
 
 write(0, '(a)') "in jedi_forecast 1"; flush(0)
   ! Infrastructure config
-  call get_initial_filename( filename )
+  call parse_command_line( filename )
 
 write(0, '(a)') "in jedi_forecast 2"; flush(0)
   ! Run object - handles initialization and finalization of required
