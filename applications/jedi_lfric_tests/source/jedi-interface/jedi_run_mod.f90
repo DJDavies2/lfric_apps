@@ -32,7 +32,7 @@ contains
   procedure, public :: initialise_infrastructure
 
   !> Get a pointer to the stored configuration.
-  procedure, public ::  get_configuration
+  procedure, public ::  get_configuration, get_configuration_sub
 
   !> Just finalise subroutine timing; to get useful timing statistics from failed adjoint tests
   procedure, public ::  finalise_timers
@@ -143,6 +143,15 @@ function get_configuration(self) result(configuration)
   configuration => self%configuration
 
 end function get_configuration
+
+subroutine get_configuration_sub(self, configuration)
+
+  class( jedi_run_type ), target, intent(inout) :: self
+  type( namelist_collection_type ), intent(inout) :: configuration
+
+  configuration = self%configuration
+
+end subroutine get_configuration_sub
 
 !> @brief    Just finalise subroutine timing; to get useful timing statistics from failed adjoint tests
 !>

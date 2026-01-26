@@ -42,7 +42,7 @@ program jedi_forecast
   type( jedi_geometry_type )             :: jedi_geometry
   type( jedi_state_type )                :: jedi_state
   type( jedi_model_type )                :: jedi_model
-  type( jedi_run_type )                  :: jedi_run
+  type( jedi_run_type ), target                  :: jedi_run
   type( jedi_post_processor_empty_type ) :: jedi_pp_empty
 
   ! Local
@@ -56,17 +56,22 @@ program jedi_forecast
 
   character(*), parameter :: program_name = "jedi_forecast"
 
+write(0, '(a)') "in jedi_forecast 1"; flush(0)
   ! Infrastructure config
   call parse_command_line( filename )
 
+write(0, '(a)') "in jedi_forecast 2"; flush(0)
   ! Run object - handles initialization and finalization of required
   ! infrastructure. Initialize external libraries such as XIOS
   call jedi_run%initialise( program_name, model_communicator )
 
+write(0, '(a)') "in jedi_forecast 3"; flush(0)
   ! Ensemble applications would split the communicator here
 
+write(0, '(a)') "in jedi_forecast 4"; flush(0)
   ! Initialize LFRic infrastructure
   call jedi_run%initialise_infrastructure( filename, model_communicator )
+write(0, '(a)') "in jedi_forecast 4.1"; flush(0)
 
   call log_event( 'Running ' // program_name // ' ...', LOG_LEVEL_ALWAYS )
   write(log_scratch_space,'(A)')                        &
@@ -74,14 +79,24 @@ program jedi_forecast
         '-bit real numbers'
   call log_event( log_scratch_space, LOG_LEVEL_ALWAYS )
 
+write(0, '(a)') "in jedi_forecast 5"; flush(0)
   ! Get the configuration
-  configuration => jedi_run%get_configuration()
+!  configuration => jedi_run%get_configuration()
+  allocate (configuration)
+  call jedi_run % get_configuration_sub(configuration)
 
+write(0, '(a,l1)') "in jedi_forecast 6, associated(configuration) = ", associated(configuration); flush(0)
   ! Get the forecast length
-  jedi_lfric_settings_config => configuration%get_namelist('jedi_lfric_settings')
+!  jedi_lfric_settings_config => configuration%get_namelist('jedi_lfric_settings')
+  allocate(jedi_lfric_settings_config)
+  call configuration % get_namelist_sub('jedi_lfric_settings', jedi_lfric_settings_config)
+write(0, '(a,l1)') "in jedi_forecast 6.1, associated(jedi_lfric_settings_config) = ", associated(jedi_lfric_settings_config); &
+    flush(0)
   call jedi_lfric_settings_config%get_value( 'forecast_length', forecast_length_str )
+write(0, '(a,a)') "in jedi_forecast 6.2, trim(forecast_length_str) = ", trim(forecast_length_str); flush(0)
   call forecast_length%init(forecast_length_str)
 
+write(0, '(a)') "in jedi_forecast 7"; flush(0)
   ! Create geometry
   call jedi_geometry%initialise( model_communicator, configuration )
 

@@ -166,7 +166,7 @@ contains
       file_list => io_context%get_filelist()
       call jedi_lfric_init_files(file_list, file_meta)
 
-      call io_context%set_timer_flag(subroutine_timers)
+!      call io_context%set_timer_flag(subroutine_timers)
 
       ! Setup the context
       call io_context%initialise( context_name )
