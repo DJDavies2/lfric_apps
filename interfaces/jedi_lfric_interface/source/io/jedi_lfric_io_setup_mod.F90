@@ -187,9 +187,6 @@ write(0, '(a)') "in init_io 4"; flush(0)
       file_list => io_context%get_filelist()
       call jedi_lfric_init_files(file_list, file_meta)
 
-write(0, '(a)') "in init_io 5"; flush(0)
-      call io_context%set_timer_flag(subroutine_timers)
-
 write(0, '(a)') "in init_io 6"; flush(0)
       ! Setup the context
       call io_context%initialise( context_name )
