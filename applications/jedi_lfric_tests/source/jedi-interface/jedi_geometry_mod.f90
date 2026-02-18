@@ -354,23 +354,19 @@ subroutine setup_io(self, configuration)
   type( jedi_duration_type )                     :: io_time_step
   type( jedi_datetime_type )                     :: io_calender_start
 
-write(0, '(a)') "in setup_io 1"; flush(0)
   ! Create IO clock and setup IO
   call configuration%get_value( 'io_time_step', io_time_step_str )
   call io_time_step%init( io_time_step_str )
   call io_time_step%get_duration( duration )
   time_step = real( duration, r_second )
 
-write(0, '(a)') "in setup_io 2"; flush(0)
   call configuration%get_value( 'io_calender_start', io_calender_start_str )
   call io_calender_start%init( io_calender_start_str )
   call io_calender_start%to_string(calender_start)
 
-write(0, '(a)') "in setup_io 3"; flush(0)
   call jedi_lfric_init_time( time_step, calender_start, &
                              self%io_clock, self%calendar )
 
-write(0, '(a)') "in setup_io 4"; flush(0)
   ! Allocate file_meta depending on how many files are required
   call configuration%get_value( 'io_setup_increment', self%io_setup_increment )
   if ( self%io_setup_increment ) then
@@ -379,7 +375,6 @@ write(0, '(a)') "in setup_io 4"; flush(0)
     allocate( file_meta_data(2) )
   endif
 
-write(0, '(a)') "in setup_io 5"; flush(0)
   ! Setup IO files: i) state read, ii) state write and iii) increment read
   !                 (if requested)
   ! Note, xios_id is arbitrary but has to be unique within a context
@@ -391,7 +386,6 @@ write(0, '(a)') "in setup_io 5"; flush(0)
   io_mode_str = "read"
   field_group_id = "read_fields"
   freq=1_i_def
-write(0, '(a)') "in setup_io 6"; flush(0)
   call file_meta_data(1)%initialise( file_name,   &
                                      xios_id,     &
                                      io_mode_str, &
@@ -404,14 +398,12 @@ write(0, '(a)') "in setup_io 6"; flush(0)
   io_mode_str = "write"
   field_group_id = "write_fields"
   freq=1_i_def
-write(0, '(a)') "in setup_io 7"; flush(0)
   call file_meta_data(2)%initialise( file_name,   &
                                      xios_id,     &
                                      io_mode_str, &
                                      freq,        &
                                      field_group_id )
 
-write(0, '(a)') "in setup_io 8"; flush(0)
   ! Read increment if required
   if ( self%io_setup_increment ) then
     call configuration%get_value( 'io_path_inc_read', io_path_inc_read )
@@ -426,7 +418,6 @@ write(0, '(a)') "in setup_io 8"; flush(0)
                                        freq,        &
                                        field_group_id )
   endif
-write(0, '(a)') "in setup_io 9"; flush(0)
 
   ! Setup XIOS with the files defined by file_meta_data
   context_name = "jedi_context"
@@ -437,13 +428,11 @@ write(0, '(a)') "in setup_io 9"; flush(0)
                       self%calendar,        &
                       self%io_context,      &
                       self%io_clock )
-write(0, '(a)') "in setup_io 10"; flush(0)
 
   ! Tick out of initialisation state
   if ( .not. self%io_clock%tick() ) then
     call log_event( 'The LFRic IO has stopped.', LOG_LEVEL_ERROR )
   end if
-write(0, '(a)') "in setup_io 11"; flush(0)
 
 end subroutine setup_io
 

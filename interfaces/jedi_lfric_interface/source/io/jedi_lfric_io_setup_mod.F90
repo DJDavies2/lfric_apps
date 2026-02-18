@@ -74,35 +74,22 @@ contains
     type(lfric_comm_type)        :: lfric_comm
     integer :: comm
 
-write(0, '(a)') "in initialise_io 1"; flush(0)
     nullify(mesh, chi, panel_id)
 
-write(0, '(a)') "in initialise_io 2"; flush(0)
     ! Create FEM specifics (function spaces and chi field)
     call init_fem( mesh_collection, chi_inventory, panel_id_inventory )
 
-write(0, '(a)') "in initialise_io 3"; flush(0)
     ! Get coordinate fields for prime mesh
     mesh => mesh_collection%get_mesh( mesh_name )
-write(0, '(a)') "in initialise_io 4"; flush(0)
     call chi_inventory%get_field_array( mesh, chi )
-write(0, '(a)') "in initialise_io 5"; flush(0)
     call panel_id_inventory%get_field( mesh, panel_id )
-write(0, '(a,l1)') "in initialise_io 5.1, associated(chi) = ", associated(chi); flush(0)
-write(0, '(a,l1)') "in initialise_io 5.1, associated(panel_id) = ", associated(panel_id); flush(0)
 
-write(0, '(a)') "in initialise_io 6"; flush(0)
     ! Initialise I/O context and setup file to use
     lfric_comm = mpi%get_comm()
-write(0, '(a)') "in initialise_io 6.1"; flush(0)
     comm = lfric_comm%get_comm_mpi_val()
-write(0, '(a,i0)') "in initialise_io 7, comm = ", comm; flush(0)
-write(0, '(a,a)') "in initialise_io 7, trim(context_name) = ", trim(context_name); flush(0)
-write(0, '(a,i0)') "in initialise_io 7, lfric_comm%get_comm_mpi_val() = ", lfric_comm%get_comm_mpi_val(); flush(0)
     call init_io( context_name, lfric_comm%get_comm_mpi_val(), file_meta, &
                   calendar, io_context, chi, panel_id, model_clock )
 
-write(0, '(a)') "in initialise_io 8"; flush(0)
     ! Do initial step
     if ( model_clock%is_initialisation() ) then
       select type (io_context)
@@ -110,10 +97,8 @@ write(0, '(a)') "in initialise_io 8"; flush(0)
         call advance(io_context, model_clock)
       end select
     end if
-write(0, '(a)') "in initialise_io 9"; flush(0)
 
     call final_fem()
-write(0, '(a)') "in initialise_io 10"; flush(0)
 
   end subroutine initialise_io
 
@@ -164,49 +149,37 @@ write(0, '(a)') "in initialise_io 10"; flush(0)
     procedure(event_action), pointer :: context_advance
     type(lfric_comm_type)            :: lfric_comm
 
-write(0, '(a)') "in init_io 1"; flush(0)
     ! Allocate XIOS IO context types
     if (present(before_close)) then
       before_close_ptr => before_close
     end if
 
-write(0, '(a)') "in init_io 2"; flush(0)
     allocate( lfric_xios_context_type::io_context, stat=rc )
     if (rc /= 0) then
       call log_event( "Unable to allocate LFRic-XIOS context object", &
                       log_level_error )
     end if
 
-write(0, '(a)') "in init_io 3"; flush(0)
     ! Select the lfric_xios_context_type
     select type(io_context)
     type is (lfric_xios_context_type)
 
-write(0, '(a)') "in init_io 4"; flush(0)
       ! Populate list of I/O files if procedure passed through
       file_list => io_context%get_filelist()
       call jedi_lfric_init_files(file_list, file_meta)
 
-write(0, '(a)') "in init_io 6"; flush(0)
       ! Setup the context
       call io_context%initialise( context_name )
-write(0, '(a)') "in init_io 7"; flush(0)
       call lfric_comm%set_comm_mpi_val(communicator)
-write(0, '(a)') "in init_io 8"; flush(0)
       call io_context%initialise_xios_context( lfric_comm,            &
                                                chi, panel_id,         &
                                                model_clock, calendar, &
                                                before_close_ptr )
-write(0, '(a)') "in init_io 9"; flush(0)
       ! Attach context advancement to the model's clock
       context_advance => advance
-write(0, '(a)') "in init_io 10"; flush(0)
       event_actor_ptr => io_context
-write(0, '(a)') "in init_io 11"; flush(0)
       call model_clock%add_event( context_advance, event_actor_ptr )
-write(0, '(a)') "in init_io 12"; flush(0)
     end select
-write(0, '(a)') "in init_io 13"; flush(0)
 
   end subroutine init_io
 

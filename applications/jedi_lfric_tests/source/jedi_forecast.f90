@@ -56,73 +56,53 @@ program jedi_forecast
 
   character(*), parameter :: program_name = "jedi_forecast"
 
-write(0, '(a)') "in jedi_forecast 1"; flush(0)
   ! Infrastructure config
   call parse_command_line( filename )
 
-write(0, '(a)') "in jedi_forecast 2"; flush(0)
   ! Run object - handles initialization and finalization of required
   ! infrastructure. Initialize external libraries such as XIOS
   call jedi_run%initialise( program_name, model_communicator )
 
-write(0, '(a)') "in jedi_forecast 3"; flush(0)
   ! Ensemble applications would split the communicator here
 
   ! Initialize LFRic infrastructure
   call jedi_run%initialise_infrastructure( filename, model_communicator )
 
-write(0, '(a)') "in jedi_forecast 4"; flush(0)
   call log_event( 'Running ' // program_name // ' ...', LOG_LEVEL_ALWAYS )
-write(0, '(a)') "in jedi_forecast 4.1"; flush(0)
   write(log_scratch_space,'(A)')                        &
         'Application built with '//trim(PRECISION_REAL)// &
         '-bit real numbers'
-write(0, '(a)') "in jedi_forecast 4.2"; flush(0)
   call log_event( log_scratch_space, LOG_LEVEL_ALWAYS )
-write(0, '(a)') "in jedi_forecast 4.3"; flush(0)
 
   ! Get the configuration
   configuration => jedi_run%get_configuration()
 
-write(0, '(a)') "in jedi_forecast 5"; flush(0)
   ! Get the forecast length
   jedi_lfric_settings_config => configuration%get_namelist('jedi_lfric_settings')
-write(0, '(a)') "in jedi_forecast 6"; flush(0)
   call jedi_lfric_settings_config%get_value( 'forecast_length', forecast_length_str )
-write(0, '(a)') "in jedi_forecast 7"; flush(0)
   call forecast_length%init(forecast_length_str)
 
-write(0, '(a)') "in jedi_forecast 8"; flush(0)
   ! Create geometry
   call jedi_geometry%initialise( model_communicator, configuration )
 
-write(0, '(a)') "in jedi_forecast 9"; flush(0)
   ! Create state (requires the configuration file name to setup the modeldb)
   call jedi_state%initialise( jedi_geometry, configuration, filename )
 
-write(0, '(a)') "in jedi_forecast 10"; flush(0)
   ! Create non-linear model
   call jedi_model%initialise( configuration )
 
-write(0, '(a)') "in jedi_forecast 11"; flush(0)
   ! Run non-linear model forecast
   call jedi_model%forecast( jedi_state, forecast_length, jedi_pp_empty )
 
-write(0, '(a)') "in jedi_forecast 12"; flush(0)
   ! Print the final state diagnostics
   call jedi_state%print()
 
-write(0, '(a)') "in jedi_forecast 13"; flush(0)
   ! To provide KGO
   depository => jedi_state%modeldb%fields%get_field_collection("depository")
-write(0, '(a)') "in jedi_forecast 14"; flush(0)
   call output_checksum( program_name, depository )
-write(0, '(a)') "in jedi_forecast 15"; flush(0)
 
   call log_event( 'Finalising ' // program_name // ' ...', LOG_LEVEL_ALWAYS )
-write(0, '(a)') "in jedi_forecast 16"; flush(0)
 
   call jedi_run%finalise()
-write(0, '(a)') "in jedi_forecast 17"; flush(0)
 
 end program jedi_forecast
