@@ -129,7 +129,8 @@ contains
                     stencil_depths,          &
                     apply_partition_check )
 
-    allocate( twod_names, source=base_mesh_names )
+    allocate(twod_names(size(base_mesh_names)))
+    twod_names(:) = base_mesh_names(:)
     do i=1, size(twod_names)
       twod_names(i) = trim(twod_names(i))//'_2d'
     end do
