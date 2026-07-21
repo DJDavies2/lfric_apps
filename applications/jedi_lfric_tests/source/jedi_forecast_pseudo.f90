@@ -38,7 +38,7 @@ program jedi_forecast_pseudo
   implicit none
 
   ! Emulator objects
-  type( jedi_geometry_type )             :: jedi_geometry
+  type( jedi_geometry_type ), target     :: jedi_geometry
   type( jedi_state_type )                :: jedi_state
   type( jedi_pseudo_model_type )         :: jedi_psuedo_model
   type( jedi_run_type ), target          :: jedi_run

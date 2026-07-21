@@ -304,7 +304,7 @@ subroutine copy_from_lfric(self, return_code)
 
   implicit none
 
-  class( atlas_field_interface_type ), intent(inout) :: self
+  class( atlas_field_interface_type ), intent(inout), target :: self
   integer(i_def),              optional, intent(out) :: return_code
 
   type( field_proxy_type )    :: field_proxy
@@ -320,12 +320,14 @@ subroutine copy_from_lfric(self, return_code)
   select type(field_ptr => self%get_lfric_field_ptr())
   class is (field_type)
     field_proxy = field_ptr%get_proxy()
+write(0, '(a,l1)') "in copy_from_lfric 1, associated(field_proxy % data) = ", associated(field_proxy % data); flush(0)
   class default
     call log_event(                                                          &
       "Unexpected field type in atlas_field_interface_type%copy_from_lfric", &
       log_level_error                                                        &
     )
   end select  
+write(0, '(a,l1)') "in copy_from_lfric 2, associated(field_proxy % data) = ", associated(field_proxy % data); flush(0)
 
   ! Get indices for atlas and LFRic data
   atlas_kstart = self % atlas_kstart

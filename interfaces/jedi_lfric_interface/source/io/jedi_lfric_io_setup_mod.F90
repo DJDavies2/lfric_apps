@@ -73,10 +73,10 @@ contains
     type(field_type), pointer    :: chi(:)
     type(field_type), pointer    :: panel_id
     type(lfric_comm_type)        :: lfric_comm
-    integer :: comm
+    integer(i_def)               :: comm
 
     nullify(mesh, chi, panel_id)
-
+    
     ! Create FEM specifics (function spaces and chi field)
     call init_fem( config, chi_inventory, panel_id_inventory )
 
@@ -87,7 +87,9 @@ contains
 
     ! Initialise I/O context and setup file to use
     lfric_comm = mpi%get_comm()
-    call init_io( config, context_name, lfric_comm%get_comm_mpi_val(), &
+    comm = lfric_comm%get_comm_mpi_val()
+    allocate( lfric_xios_context_type::io_context )
+    call init_io( config, context_name, comm, &
                   file_meta, calendar, io_context, chi, panel_id, &
                   model_clock )
 
@@ -136,14 +138,14 @@ contains
     integer(i_def),                         intent(in) :: communicator
     type(jedi_lfric_file_meta_type),        intent(in) :: file_meta(:)
     class(calendar_type),                   intent(in) :: calendar
-    class(io_context_type), target, allocatable, intent(inout) :: io_context
+    class(io_context_type), target, intent(inout)      :: io_context
     type(field_type),                       intent(in) :: chi(:)
     type(field_type),                       intent(in) :: panel_id
     type(model_clock_type),              intent(inout) :: model_clock
 
 
     ! Local
-    integer(i_def) :: rc
+    !integer(i_def) :: rc
     type(linked_list_type), pointer :: file_list
     class(event_actor_type), pointer :: event_actor_ptr
     procedure(event_action), pointer :: context_advance
@@ -159,11 +161,11 @@ contains
     coord_system  = config%finite_element%coord_system()
     scaled_radius = config%planet%scaled_radius()
 
-    allocate( lfric_xios_context_type::io_context, stat=rc )
-    if (rc /= 0) then
-      call log_event( "Unable to allocate LFRic-XIOS context object", &
-                      log_level_error )
-    end if
+!    allocate( lfric_xios_context_type::io_context, stat=rc )
+!    if (rc /= 0) then
+!      call log_event( "Unable to allocate LFRic-XIOS context object", &
+!                      log_level_error )
+!    end if
 
     ! Select the lfric_xios_context_type
     select type(io_context)

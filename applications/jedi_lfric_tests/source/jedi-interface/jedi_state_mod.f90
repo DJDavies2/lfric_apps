@@ -277,7 +277,7 @@ subroutine read_file( self, read_time )
 
   implicit none
 
-  class( jedi_state_type ), intent(inout) :: self
+  class( jedi_state_type ), intent(inout), target :: self
   type( jedi_datetime_type ),  intent(in) :: read_time
 
   ! Local
