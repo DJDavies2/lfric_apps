@@ -117,7 +117,7 @@ integer :: icp                  ! component index
 integer :: imode                ! mode index
 integer :: icode                ! error code
 integer :: i, j                 ! loop counter
-#if defined(NAG_FORTRAN) && (NAG_FORTRAN == 7000000)
+#ifdef NAGFOR
 logical :: tracer_belongs
 #endif
 character(len=errormessagelength) :: cmessage   ! error message
@@ -148,7 +148,7 @@ end if
 do i=1,size(nm_spec_active)
   ! (Slow) Workaround for NAG Fortran vn7.0 internal compiler error.
   ! Fixed in vn7.1
-#if defined(NAG_FORTRAN) && (NAG_FORTRAN == 7000000)
+#ifdef NAGFOR
   tracer_belongs = .false.
   do j=1, nmodes
     if ( mode_names(j) == nm_spec_active(i)(1:7) ) then
@@ -275,7 +275,7 @@ real, intent(in out) ::                                                        &
 
 ! Local
 integer :: ktra            ! counter
-#if defined(NAG_FORTRAN) && (NAG_FORTRAN == 7000000)
+#ifdef NAGFOR
 integer :: j
 logical :: is_a_mode_tracer
 #endif
@@ -358,7 +358,7 @@ if (any(prekp1(:) > precip_lim)) then
 
     ! (Slow) Workaround for NAG Fortran vn7.0 internal compiler error.
     ! Fixed in vn7.1
-#if defined(NAG_FORTRAN) && (NAG_FORTRAN == 7000000)
+#ifdef NAGFOR
     is_a_mode_tracer = .false.
     do j=1, nmodes
       if (mode_names(j) == nm_spec_active(iukca)(1:7)) then
