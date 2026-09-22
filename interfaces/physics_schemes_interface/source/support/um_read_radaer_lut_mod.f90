@@ -50,7 +50,7 @@ contains
     ! Arguments
     !
 
-    character(len=filenamelength), intent(in) :: filename
+    character(len=*), intent(in) :: filename
 
     integer, intent(in) :: aerosol_band
 

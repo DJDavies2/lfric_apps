@@ -82,7 +82,7 @@ implicit none
 !
 
 ! Name and path of precalc file
-character(len=filenamelength), intent(in) :: filename
+character(len=*), intent(in) :: filename
 
 ! Number of wavebands in shortwave spectrum decomposition
 integer, intent(in) :: nbr_band_sw
