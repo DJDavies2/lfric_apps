@@ -112,4 +112,20 @@ class vn32_t725(MacroUpgrade):
             config, ["namelist:mixing", "leonard_inc_with_bl"], ".false."
         )
 
+
+class vn32_t699(MacroUpgrade):
+    """Upgrade macro for ticket #699 by thomas.melvin."""
+
+    BEFORE_TAG = "vn3.2_t725"
+    AFTER_TAG = "vn3.2_t699"
+
+    def upgrade(self, config, meta_config=None):
+        # Commands From: rose-meta/lfric-gungho
+        """Add native_w2_wind_transport to namelist transport"""
+        self.add_setting(
+            config,
+            ["namelist:transport", "native_w2_wind_transport"],
+            ".false.",
+        )
+
         return config, self.reports
