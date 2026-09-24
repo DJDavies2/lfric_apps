@@ -8,7 +8,7 @@
 
 $(info Project specials for NVIDIA compiler)
 
-export FFLAGS_UM_PHYSICS = -r8
+export FFLAGS_UM_PHYSICS = -r8 -DNVHPC
 
 # The lfric_atm app defines an extra set of debug flags for
 # fast-debug. For this compiler use the same as the full-debug
