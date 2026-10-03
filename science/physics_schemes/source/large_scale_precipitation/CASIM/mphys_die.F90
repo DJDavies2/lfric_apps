@@ -59,7 +59,7 @@ integer, intent(in) :: itype
 character(len=*), intent(in) :: casim_routine
 ! CASIM Routine causing the error or warning
 
-character(len=std_msg_len), intent(in) :: info
+character(len=*), intent(in) :: info
 ! Additional error or warning information
 
 ! Local variables
