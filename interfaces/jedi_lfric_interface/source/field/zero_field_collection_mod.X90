@@ -37,6 +37,7 @@ contains
 
     call iterator%initialise(fields)
 
+#ifndef NAG
     do
       if ( .not. iterator%has_next() ) exit
         select type (listfield => iterator%next())
@@ -51,6 +52,7 @@ contains
 
         end select
     end do
+#endif
 
   end subroutine zero_field_collection
 
