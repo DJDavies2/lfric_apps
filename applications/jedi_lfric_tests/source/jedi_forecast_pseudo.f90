@@ -41,7 +41,7 @@ program jedi_forecast_pseudo
   type( jedi_geometry_type )             :: jedi_geometry
   type( jedi_state_type )                :: jedi_state
   type( jedi_pseudo_model_type )         :: jedi_psuedo_model
-  type( jedi_run_type )                  :: jedi_run
+  type( jedi_run_type ), target          :: jedi_run
   type( jedi_post_processor_empty_type ) :: jedi_pp_empty
 
   ! Local
