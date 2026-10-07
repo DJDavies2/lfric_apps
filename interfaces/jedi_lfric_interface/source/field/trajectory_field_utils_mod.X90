@@ -55,6 +55,7 @@ module trajectory_field_utils_mod
     nullify(out_field_ptr, in_field_ptr)
     nullify(out_field_ptr_int, in_field_ptr_int)
 
+#ifndef NAG
     ! Apply copy to all fields in the input collection
     call iterator%initialise(input_fields)
     do
@@ -95,6 +96,7 @@ module trajectory_field_utils_mod
 
         end select
     end do
+#endif
 
   end subroutine copy_fields
 
@@ -143,6 +145,7 @@ module trajectory_field_utils_mod
 
     ! Do the copy create
     call iterator%initialise( input_fields )
+#ifndef NAG
     do
       if ( .not. iterator%has_next() ) exit
         select type (listfield => iterator%next())
@@ -178,7 +181,7 @@ module trajectory_field_utils_mod
 
         end select
     end do
-
+#endif
   end subroutine copy_create_fields
 
   !> @brief linearly interpolate two field_collections using supplied weights
@@ -227,7 +230,7 @@ module trajectory_field_utils_mod
 
     ! Iterate over the input fields
     call iterator%initialise(t1_fields)
-
+#ifndef NAG
     do
       if ( .not. iterator%has_next() ) exit
         select type (listfield => iterator%next())
@@ -261,7 +264,7 @@ module trajectory_field_utils_mod
 
         end select
     end do
-
+#endif
   end subroutine interpolate_fields
 
 end module trajectory_field_utils_mod
