@@ -22,7 +22,7 @@ science/src/socrates/%.o science/src/socrates/%.mod: private FFLAGS_EXTRA = $(FF
 # We remove bounds checking (applied by -fcheck=all) and underflow checking. The
 # latter is due to regular permitting of exponents going to zero for small numbers
 # to imply total extinction of radiation passing through a medium
-FFLAGS_RUNTIME           = 
+FFLAGS_RUNTIME           = -O0
 
 # The lfric_atm app defines an extra set of debug flags for
 # fast-debug which are the same as the full-debug settings
