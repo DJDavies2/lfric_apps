@@ -90,6 +90,7 @@ module gungho_model_mod
   use rk_alg_timestep_mod,        only : rk_timestep_type
   use semi_implicit_timestep_alg_mod, &
                                   only : semi_implicit_timestep_type
+  use tr_bdf2_timestep_alg_mod,   only : tr_bdf2_timestep_type
   use setup_orography_alg_mod,    only : setup_orography_alg
   use idealised_config_mod,       only : perturb_init, perturb_seed
   use initial_temperature_config_mod, only : perturb, perturb_random
@@ -116,6 +117,7 @@ module gungho_model_mod
   use um_radaer_init_mod,          only : um_radaer_init
   use um_radaer_lut_init_mod,      only : um_radaer_lut_init
   use um_ukca_init_mod,            only : um_ukca_init
+  use ukca_diag_setup_mod,         only: ukca_diag_setup
   use jules_timestep_alg_mod,      only : jules_timestep_type
   use stochastic_physics_config_mod, only : use_spt, &
                                             use_skeb
@@ -527,6 +529,8 @@ contains
     use formulation_config_mod,    only: use_physics
     use section_choice_config_mod, only: radiation, &
                                          radiation_socrates
+    use chemistry_config_mod,      only: chemistry_is_loaded, &
+                                         chem_scheme_strattrop
 #endif
 
     implicit none
@@ -1095,6 +1099,13 @@ contains
       end if
       ! Initialisation of UM variables related to the mesh
       call um_domain_init(mesh)
+      ! Setup UKCA diagnostics list based on requested diags,
+      ! only for strattrop scheme at present.
+      if ( modeldb%config%namelist_exists('chemistry') ) then
+        if ( modeldb%config%chemistry%chem_scheme() ==             &
+               chem_scheme_strattrop )                             &
+          call ukca_diag_setup(modeldb%values)
+      end if
     end if
 #endif
 
@@ -1155,6 +1166,7 @@ contains
     use timestepping_config_mod, only: method,                 &
                                        method_semi_implicit,   &
                                        method_rk,              &
+                                       method_tr_bdf2,         &
                                        method_no_timestepping, &
                                        method_jules
 
@@ -1205,42 +1217,18 @@ contains
       case( method_semi_implicit )  ! Semi-Implicit
         ! Initialise the semi-implicit timestep method
         allocate( timestep_method, source=semi_implicit_timestep_type(modeldb) )
-        ! Add to the model database
-        call modeldb%values%add_key_value('timestep_method', &
-                        timestep_method)
-        ! Output initial conditions
-        if ( write_conservation_diag ) then
-          call conservation_algorithm( modeldb%config, rho, u, theta, &
-                                       mr, exner )
-          if ( use_moisture ) then
-            call moisture_conservation_alg( modeldb%config, rho, mr, &
-                                            'Before timestep' )
-          end if
-        end if
+
+      case( method_tr_bdf2 )         ! TR-BDF2
+        ! Initialise the TR-BDF2 timestep method
+        allocate( timestep_method, source=tr_bdf2_timestep_type(modeldb) )
 
       case( method_rk )             ! RK
         ! Initialise the Runge-Kutta timestep method
         allocate( timestep_method, source=rk_timestep_type(modeldb) )
-        ! Add to the model database
-        call modeldb%values%add_key_value('timestep_method', &
-                        timestep_method)
-
-        ! Output initial conditions
-        if ( write_conservation_diag ) then
-          call conservation_algorithm( modeldb%config, rho, u, theta, &
-                                       mr, exner )
-          if ( use_moisture ) then
-            call moisture_conservation_alg( modeldb%config, rho, mr, &
-                                            'Before timestep' )
-          end if
-        end if
 
       case( method_no_timestepping )
         ! Initialise a null-timestep method
         allocate( timestep_method, source=no_timestep_type() )
-        ! Add to the model database
-        call modeldb%values%add_key_value('timestep_method', &
-                        timestep_method)
         write( log_scratch_space, &
                     '(A, A)' ) 'CAUTION: Running with no timestepping. ' // &
                     ' Prognostic fields not evolved'
@@ -1250,15 +1238,23 @@ contains
       case( method_jules )  ! jules
         ! Initialise the jules timestep method
         allocate( timestep_method, source=jules_timestep_type(modeldb) )
-        ! Add to the model database
-        call modeldb%values%add_key_value('timestep_method', &
-                      timestep_method)
 #endif
 
       case default
         call log_event("Gungho: Incorrect time stepping option chosen, "// &
                         "stopping program! ",LOG_LEVEL_ERROR)
     end select
+
+    ! Add to the model database
+    call modeldb%values%add_key_value('timestep_method', timestep_method)
+
+    ! Output initial conditions
+    if ( write_conservation_diag ) then
+      call conservation_algorithm(modeldb%config, rho, u, theta, mr, exner)
+      if ( use_moisture ) then
+        call moisture_conservation_alg(modeldb%config, rho, mr, 'Before timestep')
+      end if
+    end if
 
   end subroutine initialise_model
 
