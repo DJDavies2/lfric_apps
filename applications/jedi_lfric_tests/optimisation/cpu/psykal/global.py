@@ -92,4 +92,4 @@ def trans(psyir):
     redundant_computation_setval(psyir)
     colour_loops(psyir)
     openmp_parallelise_loops_adj(psyir)
-    view_transformed_schedule(psyir)
+

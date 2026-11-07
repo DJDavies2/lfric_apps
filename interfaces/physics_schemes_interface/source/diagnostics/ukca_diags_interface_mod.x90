@@ -67,7 +67,7 @@ type(key_value_collection_type), intent(in) :: values
 logical(l_def), intent(in)  :: l_chem_timestep
 integer(i_def), intent(out) :: n_req_ukca_diags_3d
 integer(i_def), allocatable, intent(out) :: idiag_status_3d(:)
-character(len=ukca_maxlen_diagname), allocatable, intent(out) ::               &
+character(len=*), allocatable, intent(out) ::               &
                                ukca_req_diagnames_fullht(:)
 
 ! Local variables
@@ -173,7 +173,7 @@ implicit none
 
 integer(i_def), intent(in) :: n_req_ukca_diags_3d
 integer(i_def), allocatable, intent(in) :: idiag_status_3d(:)
-character(len=ukca_maxlen_diagname), allocatable, intent(in) ::                &
+character(len=*), allocatable, intent(in) ::                &
                                ukca_req_diagnames_fullht(:)
 type(field_type), intent(in) :: diagnostics_fullht_real
 
