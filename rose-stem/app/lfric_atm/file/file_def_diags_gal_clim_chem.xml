@@ -1,3 +1,7 @@
+<!--
+  Some content in this file was generated or refactored with assistance from
+  - Met Office Claude Code via AI Foundry (Claude Fable 5.1); PR #584.
+-->
 <file_definition>
 
   <!-- Main diagnostic output file for global climate runs -->
@@ -62,6 +66,7 @@
       <field field_ref="chemistry__h2so4" />
       <field field_ref="chemistry__monoterpene" />
       <field field_ref="chemistry__secondary_organic" />
+      <field field_ref="chemistry__o3_column_du" />
       <field field_ref="aerosol__n_nuc_sol" />
       <field field_ref="aerosol__n_ait_sol" />
       <field field_ref="aerosol__n_acc_sol" />
@@ -83,6 +88,11 @@
       <field field_ref="aerosol__acc_ins_du" />
       <field field_ref="aerosol__cor_ins_du" />
       <field field_ref="aerosol__cloud_drop_no_conc" />
+      <field field_ref="aerosol__mconc_du_acc_ins" />
+      <field field_ref="aerosol__mconc_du_cor_ins" />
+      <field field_ref="aerosol__ccn_number_conc_3nm" />
+      <field field_ref="aerosol__ccn_number_conc_30nm" />
+      <field field_ref="aerosol__ccn_number_conc_50nm" />
     </field_group>
 
     <!-- 2D fields averaged every timestep -->
@@ -91,6 +101,7 @@
       <field field_ref="processed__total_snow"/>
       <field field_ref="processed__total_prec"/>
       <field field_ref="processed__total_prec_acc"/>
+      <field field_ref="processed__trop_level"/>
       <field field_ref="microphysics__ls_rain"/>
       <field field_ref="microphysics__ls_snow"/>
       <field field_ref="microphysics__ls_prec"/>
@@ -174,8 +185,10 @@
     <!-- Chem fields only available on the hour -->
     <field_group operation="average" freq_op="1h" >
       <field field_ref="chemistry__o1d"/>
+      <field field_ref="chemistry__rxnflux_oh_ch4_trop" />
       <field field_ref="chemistry__photol_rate_jo1d"/>
       <field field_ref="chemistry__photol_rate_jno2"/>
+      <field field_ref="chemistry__photol_rate_jo3p"/>
     </field_group>
 
     <!-- 2D fields averaged on radiation timesteps -->
